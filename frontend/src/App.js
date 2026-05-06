@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './index.css';
 
-const API_BASE = "http://localhost:5001";
-const API_URL = process.env.REACT_APP_API_URL || '';
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5001";
 
 // Complete Implementation - April 2025
 
@@ -1303,16 +1302,8 @@ Reply:`;
         hasArea: !!(scrapeForm.area || scrapeForm.street)
       });
 
-      const res = await fetch("https://ai-leadgen-system.onrender.com/api/scrape", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          keyword: keyword,
-          location: location
-        })
-      });
+      const queryParams = new URLSearchParams({ keyword, location });
+      const res = await fetch(`${API_BASE}/api/scrape?${queryParams}`);
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));

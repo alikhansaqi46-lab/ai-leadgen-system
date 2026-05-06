@@ -10,10 +10,11 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: [FRONTEND_URL, "http://localhost:3000", "https://ai-leadgen-system-1.onrender.com"],
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type"]
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(express.json());
 
@@ -759,22 +760,26 @@ app.get('/api/whatsapp-status', (req, res) => {
   });
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+// Root health check for Render port detection
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'AI LeadGen API is running', timestamp: new Date().toISOString() });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('GLOBAL ERROR:', err);
   console.error('Stack:', err.stack);
-  res.status(500).json({ 
-    error: 'Internal Server Error', 
+  res.status(500).json({
+    error: 'Internal Server Error',
     message: err.message,
-    stack: err.stack 
+    stack: err.stack
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
