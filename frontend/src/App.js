@@ -1303,7 +1303,7 @@ Reply:`;
         hasArea: !!(scrapeForm.area || scrapeForm.street)
       });
 
-      const res = await fetch("http://localhost:5001/api/scrape", {
+      const res = await fetch("https://ai-leadgen-system.onrender.com/api/scrape", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
