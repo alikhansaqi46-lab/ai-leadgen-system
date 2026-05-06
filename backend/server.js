@@ -33,8 +33,8 @@ try {
 }
 
 try {
-  app.use('/api', require('./routes/scrape'));
-  console.log('✅ scrape routes loaded');
+  app.use('/api/scrape-puppeteer', require('./routes/scrape'));
+  console.log('✅ Puppeteer scrape routes loaded at /api/scrape-puppeteer');
 } catch (err) {
   console.error('❌ Failed to load scrape routes:', err);
 }
@@ -164,13 +164,20 @@ async function processBatch(leads, batchSize = 5) {
 }
 
 // SerpAPI scrape route - STRICT fix for duplicates and over-fetching
-app.post("/api/scrape", async (req, res) => {
-  const { keyword, location } = req.body;
+app.get("/api/scrape", async (req, res) => {
+  const { keyword, location } = req.query;
+
+  console.log("📨 [GET /api/scrape] hit — keyword:", keyword, "location:", location);
+
+  if (!keyword || !location) {
+    console.log("❌ Missing keyword or location");
+    return res.status(400).json({ error: "Missing keyword or location params" });
+  }
 
   try {
     const API_KEY = "613bdd47bbd9ae7aedeece3b692e0d57cd1ca4f215c769c805688d515022f761"
 
-    console.log("🔍 Searching:", keyword, location);
+    console.log("🔍 Searching via SerpAPI:", keyword, location);
 
     // Parse location: "street, area, city, country" or "area, city, country" or "city, country"
     const locationParts = location.toLowerCase().split(',').map(p => p.trim()).filter(p => p);
