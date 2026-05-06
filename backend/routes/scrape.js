@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const puppeteer = require("puppeteer");
 
-router.get("/", async (req, res) => {
+router.get("/scrape", async (req, res) => {
   try {
     const { keyword, location } = req.query;
 
