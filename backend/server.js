@@ -33,9 +33,11 @@ try {
   console.error('❌ Failed to load leads routes:', err);
 }
 
+// Scrape routes — mounted at /api/scrape
+// MUST be before static files and catch-all
 try {
-  app.use('/api', require('./routes/scrape'));
-  console.log('✅ scrape routes loaded at /api');
+  app.use('/api/scrape', require('./routes/scrape'));
+  console.log('✅ scrape routes mounted at /api/scrape');
 } catch (err) {
   console.error('❌ Failed to load scrape routes:', err);
 }
