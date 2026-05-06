@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const path = require('path');
 
 dotenv.config();
 
@@ -32,12 +33,7 @@ try {
   console.error('❌ Failed to load leads routes:', err);
 }
 
-try {
-  app.use('/api/scrape-puppeteer', require('./routes/scrape'));
-  console.log('✅ Puppeteer scrape routes loaded at /api/scrape-puppeteer');
-} catch (err) {
-  console.error('❌ Failed to load scrape routes:', err);
-}
+// Note: /api/scrape is defined inline below (SerpAPI route)
 
 // WhatsApp Meta Cloud API routes
 try {
@@ -774,6 +770,15 @@ app.get('/', (req, res) => {
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
+
+// Serve React frontend build (monorepo deployment)
+const buildPath = path.join(__dirname, '../frontend/build');
+app.use(express.static(buildPath));
+
+// Catch-all: serve React's index.html for non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
 // Global error handler
