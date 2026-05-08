@@ -479,11 +479,7 @@ app.get('/api/whatsapp-status', (req, res) => {
   });
 });
 
-// Root health check for Render port detection
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'AI LeadGen API is running', timestamp: new Date().toISOString() });
-});
-
+// Health check endpoint for Render
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
 });
