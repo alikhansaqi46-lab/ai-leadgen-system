@@ -22,7 +22,6 @@ router.get("/", async (req, res) => {
         engine: "google_maps",
         q: `${keyword} in ${location}`,
         type: "search",
-        num: 20,
         api_key: SERPAPI_KEY
       },
       timeout: 20000

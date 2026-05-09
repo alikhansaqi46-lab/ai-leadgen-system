@@ -1252,14 +1252,15 @@ Reply:`;
         headers: forceFresh ? { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } : {}
       });
 
-      const fetchedLeads = res.data.leads || [];
+      const fetchedLeads = Array.isArray(res.data.leads) ? res.data.leads : [];
       console.log("Fetched leads:", fetchedLeads.length);
 
       // NEVER overwrite existing leads with an empty fetched array
       setLeads(prev => {
-        if (fetchedLeads.length === 0 && prev.length > 0) {
-          console.log("Skipping overwrite — keeping existing", prev.length, "leads on screen");
-          return prev;
+        const current = Array.isArray(prev) ? prev : [];
+        if (fetchedLeads.length === 0 && current.length > 0) {
+          console.log("GUARD: skipping overwrite, keeping", current.length, "leads on screen");
+          return current;
         }
         return fetchedLeads;
       });
@@ -1328,11 +1329,6 @@ Reply:`;
       // Immediately display scraped leads
       setLeads(scrapedLeads);
       console.log("✅ Leads displayed:", scrapedLeads.length);
-
-      // Then fetch all leads from database (including auto-saved ones and previous leads)
-      setTimeout(async () => {
-        await fetchLeads(true);
-      }, 1000);
 
       setScraping(false);
       setStatus({ type: 'success', message: `✅ Scraped ${scrapedLeads.length} leads! Auto-saved to database.` });
