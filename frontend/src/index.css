@@ -832,6 +832,8 @@ tr.selected:hover {
   overflow-x: auto;
   border-radius: 16px;
   margin-top: 20px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(15, 23, 42, 0.6);
 }
 
 table {
@@ -842,7 +844,7 @@ table {
 }
 
 thead {
-  background: linear-gradient(145deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%);
+  background: linear-gradient(145deg, rgba(99, 102, 241, 0.25) 0%, rgba(139, 92, 246, 0.15) 100%);
 }
 
 th {
@@ -852,8 +854,8 @@ th {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: rgba(255, 255, 255, 0.7);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   white-space: nowrap;
 }
 
@@ -867,21 +869,23 @@ th:last-child {
 
 td {
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   transition: all 0.2s ease;
+  color: #e2e8f0;
+  vertical-align: middle;
 }
 
 tbody tr {
   transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 tbody tr:hover {
-  background: rgba(99, 102, 241, 0.08);
-  transform: scale(1.005);
+  background: rgba(99, 102, 241, 0.18);
 }
 
 tbody tr:last-child td:first-child {

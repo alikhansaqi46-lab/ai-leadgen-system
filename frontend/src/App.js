@@ -1252,8 +1252,17 @@ Reply:`;
         headers: forceFresh ? { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } : {}
       });
 
-      console.log("📊 Leads received:", res.data.leads?.length || 0);
-      setLeads(res.data.leads || []);
+      const fetchedLeads = res.data.leads || [];
+      console.log("Fetched leads:", fetchedLeads.length);
+
+      // NEVER overwrite existing leads with an empty fetched array
+      setLeads(prev => {
+        if (fetchedLeads.length === 0 && prev.length > 0) {
+          console.log("Skipping overwrite — keeping existing", prev.length, "leads on screen");
+          return prev;
+        }
+        return fetchedLeads;
+      });
 
       if (forceFresh) {
         setStatus({ type: 'success', message: `Refreshed! ${res.data.leads?.length || 0} leads loaded` });
