@@ -1313,11 +1313,12 @@ Reply:`;
       }
 
       const data = await res.json();
-      console.log("📥 Scraped leads:", data.length);
+      const scrapedLeads = data.leads || [];
+      console.log("📥 Scraped leads:", scrapedLeads.length);
 
       // Immediately display scraped leads
-      setLeads(data);
-      console.log("✅ Leads displayed:", data.length);
+      setLeads(scrapedLeads);
+      console.log("✅ Leads displayed:", scrapedLeads.length);
 
       // Then fetch all leads from database (including auto-saved ones and previous leads)
       setTimeout(async () => {
@@ -1325,7 +1326,7 @@ Reply:`;
       }, 1000);
 
       setScraping(false);
-      setStatus({ type: 'success', message: `✅ Scraped ${data.length} leads! Auto-saved to database.` });
+      setStatus({ type: 'success', message: `✅ Scraped ${scrapedLeads.length} leads! Auto-saved to database.` });
       setTimeout(() => setStatus(null), 5000);
 
     } catch (err) {

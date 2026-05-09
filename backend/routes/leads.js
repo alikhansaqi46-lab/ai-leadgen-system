@@ -10,7 +10,8 @@ const { v4: uuidv4 } = require('uuid');
 router.get('/', async (req, res) => {
   try {
     if (!db) {
-      return res.status(500).json({ error: 'Database not initialized' });
+      console.log('Firebase not configured, returning empty leads');
+      return res.json({ leads: [], count: 0 });
     }
 
     const { country, niche, limit = 100 } = req.query;
@@ -34,7 +35,7 @@ router.get('/', async (req, res) => {
     res.json({ leads, count: leads.length });
   } catch (error) {
     console.error('Error fetching leads:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ leads: [], error: error.message });
   }
 });
 
