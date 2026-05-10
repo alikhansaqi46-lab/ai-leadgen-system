@@ -5,6 +5,8 @@
 
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const {
   sendTextMessage,
   sendTemplateMessage,
@@ -14,16 +16,42 @@ const {
   formatPhoneNumber
 } = require('../services/whatsappMeta');
 
-// ==================== IN-MEMORY USER CREDENTIALS STORAGE ====================
-// TODO: Replace with database (MongoDB/PostgreSQL) for production SaaS
-const userCredentials = new Map();
+// ==================== PERSISTENT USER CREDENTIALS STORAGE ====================
+const CREDENTIALS_FILE = path.join(__dirname, '..', 'data', 'whatsapp_credentials.json');
+
+// Ensure data directory exists
+const dataDir = path.dirname(CREDENTIALS_FILE);
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+// Load credentials from file
+let userCredentials = new Map();
+try {
+  if (fs.existsSync(CREDENTIALS_FILE)) {
+    const raw = fs.readFileSync(CREDENTIALS_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    Object.entries(parsed).forEach(([key, val]) => userCredentials.set(key, val));
+    console.log('[WhatsApp] Loaded', userCredentials.size, 'credential set(s) from persistent storage');
+  }
+} catch (err) {
+  console.error('[WhatsApp] Failed to load credentials file:', err.message);
+}
+
+function saveCredentialsFile() {
+  try {
+    const obj = {};
+    userCredentials.forEach((val, key) => { obj[key] = val; });
+    fs.writeFileSync(CREDENTIALS_FILE, JSON.stringify(obj, null, 2));
+  } catch (err) {
+    console.error('[WhatsApp] Failed to save credentials file:', err.message);
+  }
+}
 
 function getUserCredentials(userId = 'default') {
-  // First check user-specific credentials
   if (userCredentials.has(userId)) {
     return userCredentials.get(userId);
   }
-  // Fall back to environment variables
   return {
     token: process.env.WHATSAPP_TOKEN || null,
     phoneNumberId: process.env.PHONE_NUMBER_ID || null,
@@ -36,6 +64,7 @@ function setUserCredentials(userId, credentials) {
     ...credentials,
     updatedAt: new Date().toISOString()
   });
+  saveCredentialsFile();
 }
 
 // ==================== CREDENTIALS MANAGEMENT ====================
@@ -98,7 +127,36 @@ router.get('/credentials', (req, res) => {
 router.delete('/credentials', (req, res) => {
   const userId = req.headers['x-user-id'] || 'default';
   userCredentials.delete(userId);
+  saveCredentialsFile();
   res.json({ success: true, message: 'Credentials removed' });
+});
+
+// POST /api/whatsapp/validate - Validate token without saving
+router.post('/validate', async (req, res) => {
+  try {
+    const { token, phoneNumberId } = req.body;
+
+    if (!token || !phoneNumberId) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        message: 'Both token and phoneNumberId are required'
+      });
+    }
+
+    console.log('[WhatsApp] Validating credentials for phoneNumberId:', phoneNumberId.substring(0, 6) + '****');
+    const validation = await validateCredentials(token, phoneNumberId);
+
+    if (validation.valid) {
+      console.log('[WhatsApp] Validation SUCCESS');
+      res.json({ valid: true, message: 'Credentials are valid' });
+    } else {
+      console.log('[WhatsApp] Validation FAILED:', validation.error);
+      res.status(400).json({ valid: false, error: validation.error });
+    }
+  } catch (error) {
+    console.error('[WhatsApp] Validation error:', error.message);
+    res.status(500).json({ valid: false, error: error.message });
+  }
 });
 
 // ==================== SEND MESSAGE ====================
@@ -189,24 +247,29 @@ router.post('/send', async (req, res) => {
   }
 });
 
+// Track sent phones within same session to prevent duplicate sends
+const sessionSentPhones = new Set();
+
 // POST /api/whatsapp/send-bulk - Send to multiple leads
 router.post('/send-bulk', async (req, res) => {
   try {
     const {
-      leads, // Array of { phone, name, city, niche, id }
+      leads, // Array of { phone, name, city, niche, id, company }
       message,
       useTemplate = false,
       templateName = null,
       templateParams = [],
       languageCode = 'en_US',
       testMode = false,
-      delayMs = 1500
+      delayMs = 2000,
+      sessionId = 'default' // client-provided session id for duplicate tracking
     } = req.body;
 
     const userId = req.headers['x-user-id'] || 'default';
     const credentials = getUserCredentials(userId);
 
     if (!testMode && (!credentials.token || !credentials.phoneNumberId)) {
+      console.log('[WhatsApp] Bulk send blocked: credentials not configured');
       return res.status(503).json({
         error: 'WhatsApp not configured',
         message: 'Please configure WhatsApp credentials first',
@@ -227,6 +290,8 @@ router.post('/send-bulk', async (req, res) => {
       });
     }
 
+    console.log(`[WhatsApp] Starting bulk send: ${leads.length} leads, testMode=${testMode}, template=${useTemplate}`);
+
     const results = [];
     const failed = [];
     let sentCount = 0;
@@ -236,6 +301,7 @@ router.post('/send-bulk', async (req, res) => {
       const phone = lead.phone || lead.phoneNumber;
 
       if (!phone || phone === 'N/A' || phone === 'Not Available') {
+        console.log(`[WhatsApp] Skipping ${lead.name || lead.id}: no phone number`);
         results.push({
           leadId: lead.id,
           name: lead.name,
@@ -246,45 +312,82 @@ router.post('/send-bulk', async (req, res) => {
         continue;
       }
 
-      try {
-        const formattedPhone = formatPhoneNumber(phone);
-        let result;
+      const formattedPhone = formatPhoneNumber(phone);
 
-        if (useTemplate && templateName) {
-          // Build template params from lead data if not provided
-          const params = templateParams.length > 0
-            ? templateParams
-            : [lead.name || 'there', lead.city || '', lead.niche || ''];
+      // Prevent duplicate sends within same session
+      const phoneSessionKey = `${sessionId}__${formattedPhone}`;
+      if (sessionSentPhones.has(phoneSessionKey)) {
+        console.log(`[WhatsApp] Skipping duplicate: ${formattedPhone} already sent in this session`);
+        results.push({
+          leadId: lead.id,
+          name: lead.name,
+          phone: formattedPhone,
+          status: 'skipped',
+          error: 'Duplicate send in this session'
+        });
+        continue;
+      }
 
-          result = await sendTemplateMessage({
-            token: credentials.token,
-            phoneNumberId: credentials.phoneNumberId,
-            to: formattedPhone,
-            templateName,
-            languageCode,
-            templateParams: params,
-            testMode
-          });
-        } else {
-          // Personalize message for each lead
-          let personalizedMessage = message || 'Hello!';
-          personalizedMessage = personalizedMessage
-            .replace(/{name}/g, lead.name || 'there')
-            .replace(/{city}/g, lead.city || '')
-            .replace(/{niche}/g, lead.niche || lead.business || 'business')
-            .replace(/{company}/g, lead.companyName || 'our company')
-            .replace(/{product}/g, lead.product || 'our services')
-            .replace(/{offer}/g, lead.offer || '');
+      let retryCount = 0;
+      const MAX_RETRIES = 1;
+      let success = false;
+      let lastError = null;
+      let result = null;
 
-          result = await sendTextMessage({
-            token: credentials.token,
-            phoneNumberId: credentials.phoneNumberId,
-            to: formattedPhone,
-            message: personalizedMessage,
-            testMode
-          });
+      while (retryCount <= MAX_RETRIES && !success) {
+        try {
+          if (retryCount > 0) {
+            console.log(`[WhatsApp] Retrying ${lead.name} (${formattedPhone}), attempt ${retryCount + 1}`);
+            await new Promise(r => setTimeout(r, 3000)); // extra delay before retry
+          }
+
+          console.log(`[WhatsApp] Sending to ${formattedPhone} (${lead.name || 'Unknown'})`);
+
+          if (useTemplate && templateName) {
+            const params = templateParams.length > 0
+              ? templateParams
+              : [lead.name || 'there', lead.city || '', lead.niche || ''];
+
+            result = await sendTemplateMessage({
+              token: credentials.token,
+              phoneNumberId: credentials.phoneNumberId,
+              to: formattedPhone,
+              templateName,
+              languageCode,
+              templateParams: params,
+              testMode
+            });
+          } else {
+            let personalizedMessage = message || 'Hello!';
+            personalizedMessage = personalizedMessage
+              .replace(/{name}/g, lead.name || 'there')
+              .replace(/{city}/g, lead.city || '')
+              .replace(/{niche}/g, lead.niche || lead.business || 'business')
+              .replace(/{company}/g, lead.company || lead.companyName || 'our company')
+              .replace(/{product}/g, lead.product || 'our services')
+              .replace(/{offer}/g, lead.offer || '');
+
+            result = await sendTextMessage({
+              token: credentials.token,
+              phoneNumberId: credentials.phoneNumberId,
+              to: formattedPhone,
+              message: personalizedMessage,
+              testMode
+            });
+          }
+
+          success = true;
+          sessionSentPhones.add(phoneSessionKey);
+          console.log(`[WhatsApp] Success: ${formattedPhone}`);
+
+        } catch (error) {
+          lastError = error;
+          retryCount++;
+          console.error(`[WhatsApp] Failed (${retryCount}/${MAX_RETRIES + 1}) to ${formattedPhone}:`, error.message);
         }
+      }
 
+      if (success) {
         results.push({
           leadId: lead.id,
           name: lead.name,
@@ -293,36 +396,39 @@ router.post('/send-bulk', async (req, res) => {
           messageId: result.messageId
         });
         sentCount++;
-
-      } catch (error) {
-        console.error(`❌ Failed to send to ${lead.name}:`, error.message);
+      } else {
         results.push({
           leadId: lead.id,
           name: lead.name,
           status: 'failed',
-          error: error.message,
-          notOnWhatsApp: error.message.includes('not registered') || error.message.includes('not on WhatsApp')
+          error: lastError?.message || 'Unknown error',
+          notOnWhatsApp: lastError?.message?.includes('not registered') || lastError?.message?.includes('not on WhatsApp')
         });
-        failed.push({ ...lead, error: error.message });
+        failed.push({ ...lead, error: lastError?.message });
       }
 
-      // Delay between messages (except last one)
-      if (i < leads.length - 1 && !testMode) {
-        await new Promise(resolve => setTimeout(resolve, delayMs));
+      // Rate-limit safe delay between messages (except last one)
+      if (i < leads.length - 1) {
+        const actualDelay = testMode ? Math.min(delayMs, 500) : delayMs;
+        console.log(`[WhatsApp] Delay ${actualDelay}ms before next message (${i + 1}/${leads.length})`);
+        await new Promise(resolve => setTimeout(resolve, actualDelay));
       }
     }
+
+    console.log(`[WhatsApp] Bulk send complete: ${sentCount} sent, ${failed.length} failed, ${leads.length} total`);
 
     res.json({
       success: sentCount > 0,
       total: leads.length,
       sent: sentCount,
       failed: failed.length,
+      skipped: leads.length - sentCount - failed.length,
       testMode,
       results
     });
 
   } catch (error) {
-    console.error('❌ Bulk send error:', error.message);
+    console.error('[WhatsApp] Bulk send fatal error:', error.message);
     res.status(500).json({
       error: 'Bulk send failed',
       message: error.message

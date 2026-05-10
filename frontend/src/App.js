@@ -39,12 +39,16 @@ function App() {
     return localStorage.getItem('leadgen_whatsapp_test_mode') === 'true';
   });
   const [whatsAppApiConfigured, setWhatsAppApiConfigured] = useState(false);
+  const [whatsAppConnectionStatus, setWhatsAppConnectionStatus] = useState('unknown'); // 'connected' | 'invalid' | 'sending' | 'failed' | 'unknown'
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
   const [whatsAppFailedLeads, setWhatsAppFailedLeads] = useState([]);
+  const [whatsAppSentCount, setWhatsAppSentCount] = useState(0);
+  const [whatsAppFailedCount, setWhatsAppFailedCount] = useState(0);
+  const [whatsAppSessionId] = useState(() => `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
 
-  // WhatsApp Credentials (Client-ready for SaaS)
+  // WhatsApp Credentials (NEVER store token in localStorage for security)
   const [showWhatsAppConfig, setShowWhatsAppConfig] = useState(false);
-  const [whatsAppToken, setWhatsAppToken] = useState(() => localStorage.getItem('leadgen_whatsapp_token') || '');
+  const [whatsAppToken, setWhatsAppToken] = useState('');
   const [whatsAppPhoneId, setWhatsAppPhoneId] = useState(() => localStorage.getItem('leadgen_whatsapp_phone_id') || '');
   const [whatsAppWabaId, setWhatsAppWabaId] = useState(() => localStorage.getItem('leadgen_whatsapp_waba_id') || '');
   const [savingCredentials, setSavingCredentials] = useState(false);
@@ -862,11 +866,14 @@ Reply:`;
     const checkWhatsAppStatus = async () => {
       try {
         const response = await axios.get(`${API_BASE}/api/whatsapp/status`);
-        setWhatsAppApiConfigured(response.data.configured);
-        console.log('📱 WhatsApp Meta API status:', response.data.configured ? 'Configured' : 'Not configured');
+        const configured = response.data.configured;
+        setWhatsAppApiConfigured(configured);
+        setWhatsAppConnectionStatus(configured ? 'connected' : 'unknown');
+        console.log('[WhatsApp] Status check:', configured ? 'Connected' : 'Not configured');
       } catch (err) {
-        console.log('⚠️ WhatsApp status check failed:', err.message);
+        console.log('[WhatsApp] Status check failed:', err.message);
         setWhatsAppApiConfigured(false);
+        setWhatsAppConnectionStatus('unknown');
       }
     };
     checkWhatsAppStatus();
@@ -904,26 +911,46 @@ Reply:`;
     }
 
     setSavingCredentials(true);
+    setWhatsAppConnectionStatus('sending');
     try {
+      // Step 1: Validate token before saving
+      console.log('[WhatsApp] Validating credentials...');
+      const validateRes = await axios.post(`${API_BASE}/api/whatsapp/validate`, {
+        token: whatsAppToken,
+        phoneNumberId: whatsAppPhoneId
+      });
+
+      if (!validateRes.data.valid) {
+        setWhatsAppConnectionStatus('invalid');
+        setStatus({ type: 'error', message: '❌ Invalid token. Please check your Meta API credentials.' });
+        return;
+      }
+
+      // Step 2: Save validated credentials to backend (backend-only storage)
       await axios.post(`${API_BASE}/api/whatsapp/credentials`, {
         token: whatsAppToken,
         phoneNumberId: whatsAppPhoneId,
         wabaId: whatsAppWabaId || null
       });
 
-      // Save to localStorage for persistence
-      localStorage.setItem('leadgen_whatsapp_token', whatsAppToken);
+      // NEVER store token in localStorage for security
+      // Only store non-sensitive identifiers
       localStorage.setItem('leadgen_whatsapp_phone_id', whatsAppPhoneId);
       if (whatsAppWabaId) localStorage.setItem('leadgen_whatsapp_waba_id', whatsAppWabaId);
 
+      // Clear token from frontend memory immediately after sending to backend
+      setWhatsAppToken('');
+
       setWhatsAppApiConfigured(true);
-      setStatus({ type: 'success', message: '✅ WhatsApp credentials saved and validated!' });
+      setWhatsAppConnectionStatus('connected');
+      setStatus({ type: 'success', message: '✅ WhatsApp connected! Credentials saved securely on server.' });
       setTimeout(() => setStatus(null), 3000);
     } catch (error) {
       console.error('❌ Save credentials failed:', error.response?.data || error.message);
+      setWhatsAppConnectionStatus('failed');
       setStatus({
         type: 'error',
-        message: error.response?.data?.message || 'Failed to save credentials'
+        message: error.response?.data?.message || error.response?.data?.error || 'Failed to validate/save credentials'
       });
     } finally {
       setSavingCredentials(false);
@@ -969,6 +996,9 @@ Reply:`;
 
     setSendingWhatsApp(true);
     setWhatsAppFailedLeads([]);
+    setWhatsAppSentCount(0);
+    setWhatsAppFailedCount(0);
+    setWhatsAppConnectionStatus('sending');
 
     // Initialize status map
     const statusMap = new Map();
@@ -992,15 +1022,13 @@ Reply:`;
         id: lead.id,
         name: lead.name,
         phone: lead.phone,
-        city: lead.city,
-        niche: lead.niche
+        city: lead.city || lead.location,
+        niche: lead.niche,
+        company: lead.company || lead.companyName
       }));
 
-      // Personalize message template
-      const personalizedMessage = messageTemplate
-        .replace(/{name}/g, '{name}')
-        .replace(/{city}/g, '{city}')
-        .replace(/{niche}/g, '{niche}');
+      // Personalize message template (backend handles variable replacement)
+      const personalizedMessage = messageTemplate;
 
       const response = await axios.post(`${API_BASE}/api/whatsapp/send-bulk`, {
         leads: leadsPayload,
@@ -1010,24 +1038,32 @@ Reply:`;
         templateParams: [],
         languageCode: templateLanguage,
         testMode: whatsAppTestMode,
-        delayMs: sendDelay
+        delayMs: sendDelay,
+        sessionId: whatsAppSessionId
       });
 
-      const { sent, failed, results } = response.data;
+      const { sent, failed, skipped, results } = response.data;
 
       // Update status map from results
       const newStatusMap = new Map();
+      let liveSent = 0;
+      let liveFailed = 0;
       results.forEach(r => {
-        newStatusMap.set(r.leadId, r.status === 'sent' ? 'sent' : 'failed');
+        newStatusMap.set(r.leadId, r.status === 'sent' ? 'sent' : (r.status === 'skipped' ? 'skipped' : 'failed'));
+        if (r.status === 'sent') liveSent++;
+        else if (r.status === 'failed') liveFailed++;
       });
       setSendStatusMap(newStatusMap);
+      setWhatsAppSentCount(liveSent);
+      setWhatsAppFailedCount(liveFailed);
 
       // Track failed leads for retry
-      const failedLeads = leadsWithPhone.filter((lead, idx) =>
-        results[idx]?.status === 'failed'
-      ).map((lead, idx) => {
-        const result = results.find(r => r.leadId === lead.id);
-        return { ...lead, error: result?.error || 'Unknown error' };
+      const failedLeads = leadsWithPhone.filter(lead => {
+        const r = results.find(res => res.leadId === lead.id);
+        return r && r.status === 'failed';
+      }).map(lead => {
+        const r = results.find(res => res.leadId === lead.id);
+        return { ...lead, error: r?.error || 'Unknown error' };
       });
       setWhatsAppFailedLeads(failedLeads);
 
@@ -1037,20 +1073,24 @@ Reply:`;
       let statusType = 'success';
 
       if (whatsAppTestMode) {
-        finalMessage = `🧪 TEST: ${sent} would be sent, ${failed} failed`;
+        finalMessage = `🧪 TEST: ${sent} would be sent, ${failed} failed${skipped > 0 ? `, ${skipped} skipped` : ''}`;
       } else if (sent === 0 && failed > 0) {
         finalMessage = `❌ All ${failed} messages failed. Check console for details.`;
         statusType = 'error';
+        setWhatsAppConnectionStatus('failed');
       } else if (sent > 0 && failed > 0) {
         finalMessage = `✅ ${sent} sent, ${failed} failed. Click "Retry Failed" to retry.`;
+        setWhatsAppConnectionStatus('connected');
       } else {
         finalMessage = `✅ Successfully sent ${sent} WhatsApp message(s)!`;
+        setWhatsAppConnectionStatus('connected');
       }
 
       setStatus({ type: statusType, message: finalMessage });
 
     } catch (error) {
       console.error('❌ Bulk WhatsApp send failed:', error.response?.data || error.message);
+      setWhatsAppConnectionStatus('failed');
       setStatus({
         type: 'error',
         message: error.response?.data?.message || 'Failed to send WhatsApp messages'
@@ -1061,6 +1101,7 @@ Reply:`;
       leadsWithPhone.forEach(lead => failMap.set(lead.id, 'failed'));
       setSendStatusMap(failMap);
       setWhatsAppFailedLeads(leadsWithPhone);
+      setWhatsAppFailedCount(leadsWithPhone.length);
     } finally {
       setSendingWhatsApp(false);
       setTimeout(() => setStatus(null), 6000);
@@ -1077,6 +1118,7 @@ Reply:`;
     console.log(`🔄 Retrying ${whatsAppFailedLeads.length} failed WhatsApp messages...`);
 
     setSendingWhatsApp(true);
+    setWhatsAppConnectionStatus('sending');
     const failedLeadsList = [...whatsAppFailedLeads];
     setWhatsAppFailedLeads([]);
 
@@ -1085,8 +1127,9 @@ Reply:`;
         id: lead.id,
         name: lead.name,
         phone: lead.phone,
-        city: lead.city,
-        niche: lead.niche
+        city: lead.city || lead.location,
+        niche: lead.niche,
+        company: lead.company || lead.companyName
       }));
 
       const response = await axios.post(`${API_BASE}/api/whatsapp/send-bulk`, {
@@ -1096,25 +1139,45 @@ Reply:`;
         templateName: useTemplateMode ? templateName : null,
         languageCode: templateLanguage,
         testMode: whatsAppTestMode,
-        delayMs: sendDelay
+        delayMs: sendDelay,
+        sessionId: whatsAppSessionId
       });
 
-      const { sent, failed } = response.data;
+      const { sent, failed, results } = response.data;
+
+      // Update counters
+      let retrySent = 0;
+      let retryFailed = 0;
+      const newStatusMap = new Map(sendStatusMap);
+      results.forEach(r => {
+        newStatusMap.set(r.leadId, r.status === 'sent' ? 'sent' : 'failed');
+        if (r.status === 'sent') retrySent++;
+        else retryFailed++;
+      });
+      setSendStatusMap(newStatusMap);
+      setWhatsAppSentCount(prev => prev + retrySent);
+      setWhatsAppFailedCount(retryFailed);
+
+      if (retryFailed > 0) {
+        const stillFailed = failedLeadsList.filter(lead => {
+          const r = results.find(res => res.leadId === lead.id);
+          return r && r.status === 'failed';
+        }).map(lead => {
+          const r = results.find(res => res.leadId === lead.id);
+          return { ...lead, error: r?.error || 'Unknown error' };
+        });
+        setWhatsAppFailedLeads(stillFailed);
+      }
 
       const finalMessage = failed > 0
         ? `✅ ${sent} retried successfully, ${failed} still failed`
         : `✅ All ${sent} messages sent successfully on retry!`;
 
       setStatus({ type: 'success', message: finalMessage });
-
-      // Update statuses
-      const newStatusMap = new Map(sendStatusMap);
-      response.data.results.forEach(r => {
-        newStatusMap.set(r.leadId, r.status === 'sent' ? 'sent' : 'failed');
-      });
-      setSendStatusMap(newStatusMap);
+      setWhatsAppConnectionStatus(failed > 0 ? 'connected' : 'connected');
 
     } catch (error) {
+      setWhatsAppConnectionStatus('failed');
       setStatus({ type: 'error', message: 'Retry failed: ' + (error.response?.data?.message || error.message) });
     } finally {
       setSendingWhatsApp(false);
@@ -2107,6 +2170,23 @@ const handleExport = () => {
               </button>
             )}
 
+            {/* Sent/Failed counters */}
+            {(whatsAppSentCount > 0 || whatsAppFailedCount > 0) && (
+              <div style={{
+                marginLeft: '10px',
+                display: 'flex',
+                gap: '12px',
+                fontSize: '12px',
+                fontWeight: 600,
+                alignItems: 'center'
+              }}>
+                <span style={{ color: '#22c55e' }}>✅ {whatsAppSentCount} sent</span>
+                {whatsAppFailedCount > 0 && (
+                  <span style={{ color: '#ef4444' }}>❌ {whatsAppFailedCount} failed</span>
+                )}
+              </div>
+            )}
+
             {/* WhatsApp Config Button */}
             <button
               onClick={() => setShowWhatsAppConfig(!showWhatsAppConfig)}
@@ -2323,7 +2403,7 @@ const handleExport = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={saveWhatsAppCredentials}
                 disabled={savingCredentials || !whatsAppToken || !whatsAppPhoneId}
@@ -2336,8 +2416,29 @@ const handleExport = () => {
               >
                 {savingCredentials ? '⏳ Validating...' : '💾 Save & Validate Credentials'}
               </button>
-              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
-                {whatsAppApiConfigured ? '✅ Connected' : '❌ Not configured'}
+              <span style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                padding: '4px 10px',
+                borderRadius: '6px',
+                backgroundColor:
+                  whatsAppConnectionStatus === 'connected' ? 'rgba(34, 197, 94, 0.2)' :
+                  whatsAppConnectionStatus === 'sending' ? 'rgba(59, 130, 246, 0.2)' :
+                  whatsAppConnectionStatus === 'failed' ? 'rgba(239, 68, 68, 0.2)' :
+                  whatsAppConnectionStatus === 'invalid' ? 'rgba(245, 158, 11, 0.2)' :
+                  'rgba(148, 163, 184, 0.2)',
+                color:
+                  whatsAppConnectionStatus === 'connected' ? '#22c55e' :
+                  whatsAppConnectionStatus === 'sending' ? '#3b82f6' :
+                  whatsAppConnectionStatus === 'failed' ? '#ef4444' :
+                  whatsAppConnectionStatus === 'invalid' ? '#f59e0b' :
+                  '#94a3b8'
+              }}>
+                {whatsAppConnectionStatus === 'connected' && '✅ Connected'}
+                {whatsAppConnectionStatus === 'sending' && '⏳ Validating...'}
+                {whatsAppConnectionStatus === 'failed' && '❌ Connection Failed'}
+                {whatsAppConnectionStatus === 'invalid' && '⚠️ Invalid Token'}
+                {whatsAppConnectionStatus === 'unknown' && (whatsAppApiConfigured ? '✅ Connected' : '❌ Not configured')}
               </span>
             </div>
 
