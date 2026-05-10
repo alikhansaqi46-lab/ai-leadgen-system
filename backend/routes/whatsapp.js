@@ -686,19 +686,37 @@ router.post('/webhook', async (req, res) => {
 
 // GET /api/whatsapp/webhook - Meta webhook verification
 router.get('/webhook', (req, res) => {
-  const mode = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
-  const challenge = req.query['hub.challenge'];
+  // Meta sends: hub.mode=subscribe&hub.verify_token=<token>&hub.challenge=<challenge>
+  // Support both flat querystring keys (default Express) and nested (qs library with allowDots)
+  const mode = req.query['hub.mode'] || req.query?.hub?.mode;
+  const token = (req.query['hub.verify_token'] || req.query?.hub?.verify_token || '').toString().trim();
+  const challenge = req.query['hub.challenge'] || req.query?.hub?.challenge;
 
-  const VERIFY_TOKEN = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || 'leadgen-verify-token';
+  const VERIFY_TOKEN = (process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || 'leadgen-verify-token').toString().trim();
 
-  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-    console.log('✅ Webhook verified');
-    res.status(200).send(challenge);
-  } else {
-    console.log('❌ Webhook verification failed:', { mode, token: token?.substring(0, 10) });
-    res.status(403).send('Forbidden');
+  console.log('[WhatsApp Webhook] Verification request received');
+  console.log('  URL:', req.originalUrl);
+  console.log('  hub.mode:', mode);
+  console.log('  hub.verify_token received:', token ? token.substring(0, 15) + '...' : 'UNDEFINED');
+  console.log('  hub.verify_token expected:', VERIFY_TOKEN.substring(0, 15) + '...');
+  console.log('  hub.challenge:', challenge ? challenge.toString().substring(0, 30) : 'UNDEFINED');
+  console.log('  Query keys:', Object.keys(req.query));
+
+  if (mode === 'subscribe' && token && token === VERIFY_TOKEN) {
+    console.log('[WhatsApp Webhook] ✅ Verification SUCCESS — returning challenge');
+    return res.status(200).send(String(challenge));
   }
+
+  // Detailed failure log for debugging
+  const failures = [];
+  if (mode !== 'subscribe') failures.push(`hub.mode="${mode}" (expected "subscribe")`);
+  if (!token) failures.push('hub.verify_token is missing');
+  else if (token !== VERIFY_TOKEN) failures.push('hub.verify_token does NOT match VERIFY_TOKEN');
+  if (!challenge) failures.push('hub.challenge is missing');
+
+  console.log('[WhatsApp Webhook] ❌ Verification FAILED:', failures.join(' | '));
+  console.log('[WhatsApp Webhook] Action: Set WHATSAPP_WEBHOOK_VERIFY_TOKEN env var to match the token you entered in Meta Developers → Configuration → Webhook → Verify Token');
+  return res.status(403).send('Forbidden');
 });
 
 module.exports = router;
