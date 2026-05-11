@@ -40,6 +40,7 @@ function App() {
   });
   const [whatsAppApiConfigured, setWhatsAppApiConfigured] = useState(false);
   const [whatsAppConnectionStatus, setWhatsAppConnectionStatus] = useState('unknown'); // 'connected' | 'invalid' | 'sending' | 'failed' | 'unknown'
+  const [whatsAppCredentialSource, setWhatsAppCredentialSource] = useState(null); // 'file' | 'env' | null
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
   const [whatsAppFailedLeads, setWhatsAppFailedLeads] = useState([]);
   const [whatsAppSentCount, setWhatsAppSentCount] = useState(0);
@@ -864,13 +865,16 @@ Reply:`;
       try {
         const response = await axios.get(`${API_BASE}/api/whatsapp/status`);
         const configured = response.data.configured;
+        const source = response.data.source || null;
         setWhatsAppApiConfigured(configured);
         setWhatsAppConnectionStatus(configured ? 'connected' : 'unknown');
-        console.log('[WhatsApp] Status check:', configured ? 'Connected' : 'Not configured');
+        setWhatsAppCredentialSource(source);
+        console.log('[WhatsApp] Status check:', configured ? 'Connected' : 'Not configured', '| Source:', source);
       } catch (err) {
         console.log('[WhatsApp] Status check failed:', err.message);
         setWhatsAppApiConfigured(false);
         setWhatsAppConnectionStatus('unknown');
+        setWhatsAppCredentialSource(null);
       }
     };
     checkWhatsAppStatus();
@@ -940,6 +944,7 @@ Reply:`;
 
       setWhatsAppApiConfigured(true);
       setWhatsAppConnectionStatus('connected');
+      setWhatsAppCredentialSource('file');
       setStatus({ type: 'success', message: '✅ WhatsApp connected! Credentials saved securely on server.' });
       setTimeout(() => setStatus(null), 3000);
     } catch (error) {
@@ -2429,11 +2434,11 @@ const handleExport = () => {
                   whatsAppConnectionStatus === 'invalid' ? '#f59e0b' :
                   '#94a3b8'
               }}>
-                {whatsAppConnectionStatus === 'connected' && '✅ Connected'}
+                {whatsAppConnectionStatus === 'connected' && `✅ Connected${whatsAppCredentialSource === 'env' ? ' (env)' : ''}`}
                 {whatsAppConnectionStatus === 'sending' && '⏳ Validating...'}
                 {whatsAppConnectionStatus === 'failed' && '❌ Connection Failed'}
                 {whatsAppConnectionStatus === 'invalid' && '⚠️ Invalid Token'}
-                {whatsAppConnectionStatus === 'unknown' && (whatsAppApiConfigured ? '✅ Connected' : '❌ Not configured')}
+                {whatsAppConnectionStatus === 'unknown' && (whatsAppApiConfigured ? `✅ Connected${whatsAppCredentialSource === 'env' ? ' (env)' : ''}` : '❌ Not configured')}
               </span>
             </div>
 
@@ -2451,6 +2456,23 @@ const handleExport = () => {
               3. Copy Access Token and Phone Number ID<br/>
               4. For templates, also add your Business Account ID
             </div>
+
+            {whatsAppCredentialSource !== 'env' && (
+              <div style={{
+                marginTop: '10px',
+                padding: '10px',
+                background: 'rgba(245, 158, 11, 0.1)',
+                borderRadius: '6px',
+                fontSize: '12px',
+                color: 'rgba(255,255,255,0.6)',
+                border: '1px solid rgba(245, 158, 11, 0.2)'
+              }}>
+                <strong style={{ color: '#f59e0b' }}>⚠️ Production Note:</strong><br/>
+                Credentials saved here are stored in a file. On Render free tier, files may be lost after redeploys or long idle periods.<br/>
+                For <strong>permanent</strong> persistence, set these environment variables in your Render dashboard:<br/>
+                <code style={{ color: '#25d366' }}>WHATSAPP_TOKEN</code>, <code style={{ color: '#25d366' }}>PHONE_NUMBER_ID</code>, <code style={{ color: '#25d366' }}>WHATSAPP_BUSINESS_ACCOUNT_ID</code>
+              </div>
+            )}
           </div>
         )}
 

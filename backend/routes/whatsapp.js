@@ -18,40 +18,89 @@ const {
 
 // ==================== PERSISTENT USER CREDENTIALS STORAGE ====================
 const CREDENTIALS_FILE = path.join(__dirname, '..', 'data', 'whatsapp_credentials.json');
+const CREDENTIALS_TMP = path.join(__dirname, '..', 'data', 'whatsapp_credentials.json.tmp');
 
-// Ensure data directory exists
-const dataDir = path.dirname(CREDENTIALS_FILE);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// Load credentials from file
-let userCredentials = new Map();
-try {
-  if (fs.existsSync(CREDENTIALS_FILE)) {
-    const raw = fs.readFileSync(CREDENTIALS_FILE, 'utf8');
-    const parsed = JSON.parse(raw);
-    Object.entries(parsed).forEach(([key, val]) => userCredentials.set(key, val));
-    console.log('[WhatsApp] Loaded', userCredentials.size, 'credential set(s) from persistent storage');
+function ensureDataDir() {
+  const dataDir = path.dirname(CREDENTIALS_FILE);
+  if (!fs.existsSync(dataDir)) {
+    try {
+      fs.mkdirSync(dataDir, { recursive: true });
+      console.log('[WhatsApp] Created data directory:', dataDir);
+    } catch (err) {
+      console.error('[WhatsApp] Failed to create data directory:', err.message);
+    }
   }
-} catch (err) {
-  console.error('[WhatsApp] Failed to load credentials file:', err.message);
 }
 
+ensureDataDir();
+
+// In-memory credential cache
+let userCredentials = new Map();
+let lastLoadTime = 0;
+
+/**
+ * Reload credentials from file into memory.
+ * Called at startup, periodically, and on-demand when a lookup misses.
+ */
+function reloadCredentialsFromFile() {
+  try {
+    if (!fs.existsSync(CREDENTIALS_FILE)) {
+      return;
+    }
+    const raw = fs.readFileSync(CREDENTIALS_FILE, 'utf8');
+    if (!raw.trim()) return;
+    const parsed = JSON.parse(raw);
+    const previousSize = userCredentials.size;
+    Object.entries(parsed).forEach(([key, val]) => userCredentials.set(key, val));
+    lastLoadTime = Date.now();
+    if (userCredentials.size !== previousSize || previousSize === 0) {
+      console.log('[WhatsApp] Reloaded', userCredentials.size, 'credential set(s) from file');
+    }
+  } catch (err) {
+    console.error('[WhatsApp] Failed to reload credentials file:', err.message);
+  }
+}
+
+// Initial load at startup
+reloadCredentialsFromFile();
+
+/**
+ * Atomic file write: write to temp, then rename.
+ * Prevents corruption if process crashes during write.
+ */
 function saveCredentialsFile() {
+  ensureDataDir();
   try {
     const obj = {};
     userCredentials.forEach((val, key) => { obj[key] = val; });
-    fs.writeFileSync(CREDENTIALS_FILE, JSON.stringify(obj, null, 2));
+    const json = JSON.stringify(obj, null, 2);
+    fs.writeFileSync(CREDENTIALS_TMP, json, { encoding: 'utf8' });
+    fs.renameSync(CREDENTIALS_TMP, CREDENTIALS_FILE);
+    console.log('[WhatsApp] Credentials saved to file (atomic write)');
   } catch (err) {
     console.error('[WhatsApp] Failed to save credentials file:', err.message);
   }
 }
 
+/**
+ * Get credentials for a user.
+ * 1. Try in-memory cache
+ * 2. If miss, reload from file (handles server restarts)
+ * 3. If still miss, fall back to environment variables
+ */
 function getUserCredentials(userId = 'default') {
   if (userCredentials.has(userId)) {
     return userCredentials.get(userId);
   }
+
+  // Miss in memory — try reloading from file (server may have restarted)
+  reloadCredentialsFromFile();
+
+  if (userCredentials.has(userId)) {
+    return userCredentials.get(userId);
+  }
+
+  // Final fallback: environment variables (production-stable)
   return {
     token: process.env.WHATSAPP_TOKEN || null,
     phoneNumberId: process.env.PHONE_NUMBER_ID || null,
@@ -66,6 +115,11 @@ function setUserCredentials(userId, credentials) {
   });
   saveCredentialsFile();
 }
+
+// Auto-reload credentials every 10 seconds to survive Render restarts / filesystem sync issues
+setInterval(() => {
+  reloadCredentialsFromFile();
+}, 10000);
 
 // ==================== CREDENTIALS MANAGEMENT ====================
 
@@ -474,9 +528,16 @@ router.get('/templates', async (req, res) => {
 // GET /api/whatsapp/status - Check WhatsApp configuration status
 router.get('/status', (req, res) => {
   const userId = req.headers['x-user-id'] || 'default';
-  const credentials = getUserCredentials(userId);
 
+  // Force reload if missing (defensive for Render restarts)
+  if (!userCredentials.has(userId)) {
+    reloadCredentialsFromFile();
+  }
+
+  const credentials = getUserCredentials(userId);
   const hasCredentials = !!(credentials.token && credentials.phoneNumberId);
+  const fromFile = userCredentials.has(userId);
+  const fromEnv = !fromFile && !!(process.env.WHATSAPP_TOKEN && process.env.PHONE_NUMBER_ID);
 
   res.json({
     configured: hasCredentials,
@@ -484,7 +545,35 @@ router.get('/status', (req, res) => {
     hasPhoneNumberId: !!credentials.phoneNumberId,
     hasWabaId: !!credentials.wabaId,
     provider: 'meta',
-    envFallback: !userCredentials.has(userId) && hasCredentials
+    source: fromFile ? 'file' : (fromEnv ? 'env' : null),
+    envFallback: fromEnv
+  });
+});
+
+// GET /api/whatsapp/diagnostics - Debug credential state (safe, masked)
+router.get('/diagnostics', (req, res) => {
+  const userId = req.headers['x-user-id'] || 'default';
+  const fileExists = fs.existsSync(CREDENTIALS_FILE);
+  const fileSize = fileExists ? fs.statSync(CREDENTIALS_FILE).size : 0;
+
+  const creds = getUserCredentials(userId);
+  const fromFile = userCredentials.has(userId);
+
+  res.json({
+    fileExists,
+    fileSize,
+    filePath: CREDENTIALS_FILE,
+    memoryCacheSize: userCredentials.size,
+    lastLoadTime: lastLoadTime ? new Date(lastLoadTime).toISOString() : null,
+    envVarsSet: {
+      WHATSAPP_TOKEN: !!process.env.WHATSAPP_TOKEN,
+      PHONE_NUMBER_ID: !!process.env.PHONE_NUMBER_ID,
+      WHATSAPP_BUSINESS_ACCOUNT_ID: !!process.env.WHATSAPP_BUSINESS_ACCOUNT_ID
+    },
+    configured: !!(creds.token && creds.phoneNumberId),
+    source: fromFile ? 'file' : 'env_or_none',
+    tokenPreview: creds.token ? creds.token.substring(0, 8) + '****' : null,
+    phoneNumberIdPreview: creds.phoneNumberId ? creds.phoneNumberId.substring(0, 6) + '****' : null
   });
 });
 
