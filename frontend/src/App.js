@@ -669,17 +669,14 @@ Reply:`;
     const idsToDelete = Array.from(selectedLeads);
     console.log('🗑️ Deleting leads:', idsToDelete.length);
 
-    // IMMEDIATELY update local state - this removes ALL selected leads at once
+    // IMMEDIATELY update local state
     setLeads(prev => prev.filter(lead => !idsToDelete.includes(lead.id)));
     setSelectedLeads(new Set());
 
-    // Delete from database in background (don't block UI)
-    const savedIds = idsToDelete.filter(id => !String(id).startsWith('scraped_'));
-    if (savedIds.length > 0) {
-      axios.post(`${API_BASE}/api/leads/bulk-delete`, { ids: savedIds })
-        .then(() => console.log(`✅ Deleted ${savedIds.length} from DB`))
-        .catch(err => console.error('❌ Delete error:', err.message));
-    }
+    // Delete from persistent storage in background
+    axios.post(`${API_BASE}/api/leads/bulk-delete`, { ids: idsToDelete })
+      .then(() => console.log(`✅ Deleted ${idsToDelete.length} from DB`))
+      .catch(err => console.error('❌ Delete error:', err.message));
 
     setStatus({ type: 'success', message: `Deleted ${idsToDelete.length} leads` });
     setTimeout(() => setStatus(null), 2000);
@@ -1387,14 +1384,20 @@ Reply:`;
 
       const data = await res.json();
       const scrapedLeads = data.leads || [];
-      console.log("📥 Scraped leads:", scrapedLeads.length);
+      const totalScraped = data.totalScraped || scrapedLeads.length;
+      const savedCount = data.savedCount || scrapedLeads.length;
+      console.log("📥 Scraped leads:", totalScraped, "| Saved:", savedCount);
 
-      // Immediately display scraped leads
-      setLeads(scrapedLeads);
-      console.log("✅ Leads displayed:", scrapedLeads.length);
+      // Fetch all persisted leads so user sees full accumulated list
+      await fetchLeads(true);
+      console.log("✅ All leads refreshed from persistent storage");
 
       setScraping(false);
-      setStatus({ type: 'success', message: `✅ Scraped ${scrapedLeads.length} leads! Auto-saved to database.` });
+      const dupes = totalScraped - savedCount;
+      const msg = dupes > 0
+        ? `✅ Saved ${savedCount} new leads (${dupes} duplicates skipped). Auto-persisted to database.`
+        : `✅ Scraped ${savedCount} leads! Auto-saved to database.`;
+      setStatus({ type: 'success', message: msg });
       setTimeout(() => setStatus(null), 5000);
 
     } catch (err) {
@@ -1404,19 +1407,11 @@ Reply:`;
     }
   };
 
-  const handleDelete = async (id, isScraped = false) => {
-    console.log('Deleting lead:', id, 'isScraped:', isScraped);
-    
-    if (isScraped || String(id).startsWith('scraped_')) {
-      // Just remove from local state (scraped leads not in DB yet)
-      console.log('Removing scraped lead from state:', id);
-      setLeads(prev => prev.filter(lead => lead.id !== id));
-    } else {
-      // Call API to delete from database
-      console.log('Deleting saved lead from DB:', id);
-      await axios.delete(`${API_BASE}/api/leads/${id}`);
-      fetchLeads();
-    }
+  const handleDelete = async (id) => {
+    console.log('[Leads] Deleting lead from persistent storage:', id);
+    // All leads now have persistent UUIDs — always delete from backend
+    await axios.delete(`${API_BASE}/api/leads/${id}`);
+    fetchLeads();
   };
 const handleExport = () => {
   const csv = [
@@ -2862,7 +2857,7 @@ const handleExport = () => {
                       {visibleColumns.action && (
                         <td style={{ textAlign: 'center' }}>
                           <button 
-                            onClick={() => handleDelete(lead.id, lead._isScraped)}
+                            onClick={() => handleDelete(lead.id)}
                             className="btn btn-delete"
                           >
                             <span className="btn-icon">🗑</span>

@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
+const storage = require('../utils/leadStorage');
+const { v4: uuidv4 } = require('uuid');
 
 const SERPAPI_KEY = process.env.SERPAPI_KEY || "613bdd47bbd9ae7aedeece3b692e0d57cd1ca4f215c769c805688d515022f761";
 
@@ -67,20 +69,28 @@ router.get("/", async (req, res) => {
 
     console.log(`[SerpAPI] After dedupe: ${deduped.length}`);
 
-    const leads = deduped.map((place, i) => ({
-      id: `lead_${i + 1}`,
+    const leads = deduped.map((place) => ({
+      id: uuidv4(),
       name: place.title || "Unknown",
       address: place.address || "N/A",
       phone: place.phone || "N/A",
       website: place.website || "N/A",
       email: "N/A",
+      city: place.address?.split(',')?.[0]?.trim() || location,
       location: location,
       niche: keyword,
+      rating: place.rating || null,
+      reviews: place.reviews || null,
       source: "serpapi"
     }));
 
-    console.log("SCRAPE SUCCESS", leads.length);
-    return res.json({ leads });
+    // Save to persistent storage (deduplicates against existing)
+    const saved = await storage.addLeads(leads);
+    console.log(`[Scrape] Saved ${saved.length} new leads (${leads.length - saved.length} duplicates skipped)`);
+
+    // Return only the SAVED leads — every one has a real UUID in persistent storage
+    console.log("SCRAPE SUCCESS", saved.length);
+    return res.json({ leads: saved, savedCount: saved.length, totalScraped: leads.length });
 
   } catch (err) {
     console.error("SCRAPE ERROR", err.message);
