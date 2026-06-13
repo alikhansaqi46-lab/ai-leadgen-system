@@ -95,6 +95,29 @@ Key variables:
 
 > Security: do **not** put an OpenAI key in the frontend. AI generation is moving server-side; the browser must never receive the key.
 
+### 4b. Storage drivers (PostgreSQL / Supabase)
+
+Lead storage is pluggable via `STORAGE_DRIVER` (all behind the same `leadStorage.js` interface):
+
+| `STORAGE_DRIVER` | Behavior |
+|------------------|----------|
+| `auto` (default) | Firestore if configured, else JSON file (legacy behavior) |
+| `json` | File-based JSON (`backend/data/leads.json`) |
+| `firestore` | Firestore |
+| `postgres` | PostgreSQL / Supabase (requires `DATABASE_URL`) |
+
+To migrate to Postgres:
+
+```bash
+cd backend
+npm run db:init                      # create schema (idempotent)
+npm run db:migrate-json -- --dry-run # preview import (no writes)
+npm run db:migrate-json              # import data/leads.json (idempotent, copy-only)
+# then set STORAGE_DRIVER=postgres and restart
+```
+
+Rollback is just flipping `STORAGE_DRIVER` back — the source data is never modified. Full runbook: [`docs/S1_MIGRATION.md`](docs/S1_MIGRATION.md).
+
 ### 5. Running the App
 
 ```bash
