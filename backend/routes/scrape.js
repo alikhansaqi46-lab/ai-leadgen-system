@@ -94,7 +94,8 @@ router.get("/", async (req, res) => {
     }));
 
     // Save to persistent storage (deduplicates against existing)
-    const saved = await storage.addLeads(leads);
+    const workspaceId = (req.auth && req.auth.workspaceId) || undefined;
+    const saved = await storage.addLeads(leads, { workspaceId });
     console.log(`[Scrape] Saved ${saved.length} new leads (${leads.length - saved.length} duplicates skipped)`);
 
     // Return only the SAVED leads — every one has a real UUID in persistent storage

@@ -118,6 +118,22 @@ npm run db:migrate-json              # import data/leads.json (idempotent, copy-
 
 Rollback is just flipping `STORAGE_DRIVER` back — the source data is never modified. Full runbook: [`docs/S1_MIGRATION.md`](docs/S1_MIGRATION.md).
 
+### 4c. Auth & workspace isolation (S2)
+
+Authentication and per-workspace data isolation are pluggable via `AUTH_MODE`:
+
+| `AUTH_MODE` | Behavior |
+|-------------|----------|
+| `disabled` (default) | No token required; everything uses `DEFAULT_WORKSPACE_ID`. Identical to pre-S2 behavior. |
+| `supabase` | Verify Supabase JWTs; data scoped per workspace. |
+| `dev` | Verify locally signed JWTs (`DEV_AUTH_SECRET`) — for tests only. |
+
+When enabled, every lead is scoped by `workspace_id` across all storage drivers,
+and the frontend (`REACT_APP_AUTH_MODE=supabase`) shows a Supabase login. The
+WhatsApp webhook stays unauthenticated. Run the isolation tests with
+`npm run test:isolation` (add `DATABASE_URL` to also cover Postgres). Full
+runbook: [`docs/S2_AUTH.md`](docs/S2_AUTH.md).
+
 ### 5. Running the App
 
 ```bash

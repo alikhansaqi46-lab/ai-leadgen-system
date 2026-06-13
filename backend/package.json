@@ -7,7 +7,9 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "db:init": "node scripts/init-db.js",
-    "db:migrate-json": "node scripts/migrate-json-to-postgres.js"
+    "db:migrate-json": "node scripts/migrate-json-to-postgres.js",
+    "db:backfill-workspace": "node scripts/backfill-workspace.js",
+    "test:isolation": "node scripts/test-isolation.js"
   },
   "dependencies": {
     "axios": "^1.15.2",
@@ -17,6 +19,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "firebase-admin": "^12.0.0",
+    "jsonwebtoken": "^9.0.3",
     "nodemailer": "^6.9.7",
     "pg": "^8.13.1",
     "uuid": "^9.0.1"

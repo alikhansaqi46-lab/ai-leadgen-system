@@ -16,6 +16,16 @@ const {
   formatPhoneNumber
 } = require('../services/whatsappMeta');
 
+/**
+ * Resolve the credential key (workspace) for a request.
+ * Prefers the authenticated workspace (req.auth.workspaceId, set by auth middleware),
+ * falls back to the legacy x-user-id header, then 'default'.
+ * The webhook is unauthenticated and has neither, so it resolves to 'default'.
+ */
+function workspaceOf(req) {
+  return (req.auth && req.auth.workspaceId) || req.headers['x-user-id'] || 'default';
+}
+
 // ==================== PERSISTENT USER CREDENTIALS STORAGE ====================
 const CREDENTIALS_FILE = path.join(__dirname, '..', 'data', 'whatsapp_credentials.json');
 const CREDENTIALS_TMP = path.join(__dirname, '..', 'data', 'whatsapp_credentials.json.tmp');
@@ -127,7 +137,7 @@ setInterval(() => {
 router.post('/credentials', async (req, res) => {
   try {
     const { token, phoneNumberId, wabaId } = req.body;
-    const userId = req.headers['x-user-id'] || 'default';
+    const userId = workspaceOf(req);
 
     if (!token || !phoneNumberId) {
       return res.status(400).json({
@@ -164,7 +174,7 @@ router.post('/credentials', async (req, res) => {
 
 // GET /api/whatsapp/credentials - Check if credentials exist (safe - no token exposure)
 router.get('/credentials', (req, res) => {
-  const userId = req.headers['x-user-id'] || 'default';
+  const userId = workspaceOf(req);
   const creds = getUserCredentials(userId);
 
   const hasCredentials = !!(creds.token && creds.phoneNumberId);
@@ -179,7 +189,7 @@ router.get('/credentials', (req, res) => {
 
 // DELETE /api/whatsapp/credentials - Remove stored credentials
 router.delete('/credentials', (req, res) => {
-  const userId = req.headers['x-user-id'] || 'default';
+  const userId = workspaceOf(req);
   userCredentials.delete(userId);
   saveCredentialsFile();
   res.json({ success: true, message: 'Credentials removed' });
@@ -228,7 +238,7 @@ router.post('/send', async (req, res) => {
       testMode = false
     } = req.body;
 
-    const userId = req.headers['x-user-id'] || 'default';
+    const userId = workspaceOf(req);
     const credentials = getUserCredentials(userId);
 
     if (!testMode && (!credentials.token || !credentials.phoneNumberId)) {
@@ -319,7 +329,7 @@ router.post('/send-bulk', async (req, res) => {
       sessionId = 'default' // client-provided session id for duplicate tracking
     } = req.body;
 
-    const userId = req.headers['x-user-id'] || 'default';
+    const userId = workspaceOf(req);
     const credentials = getUserCredentials(userId);
 
     if (!testMode && (!credentials.token || !credentials.phoneNumberId)) {
@@ -495,7 +505,7 @@ router.post('/send-bulk', async (req, res) => {
 // GET /api/whatsapp/templates - Get approved templates
 router.get('/templates', async (req, res) => {
   try {
-    const userId = req.headers['x-user-id'] || 'default';
+    const userId = workspaceOf(req);
     const credentials = getUserCredentials(userId);
 
     if (!credentials.token || !credentials.wabaId) {
@@ -527,7 +537,7 @@ router.get('/templates', async (req, res) => {
 
 // GET /api/whatsapp/status - Check WhatsApp configuration status
 router.get('/status', (req, res) => {
-  const userId = req.headers['x-user-id'] || 'default';
+  const userId = workspaceOf(req);
 
   // Force reload if missing (defensive for Render restarts)
   if (!userCredentials.has(userId)) {
@@ -552,7 +562,7 @@ router.get('/status', (req, res) => {
 
 // GET /api/whatsapp/diagnostics - Debug credential state (safe, masked)
 router.get('/diagnostics', (req, res) => {
-  const userId = req.headers['x-user-id'] || 'default';
+  const userId = workspaceOf(req);
   const fileExists = fs.existsSync(CREDENTIALS_FILE);
   const fileSize = fileExists ? fs.statSync(CREDENTIALS_FILE).size : 0;
 
@@ -580,7 +590,7 @@ router.get('/diagnostics', (req, res) => {
 // GET /api/whatsapp/business-info - Get WhatsApp Business info
 router.get('/business-info', async (req, res) => {
   try {
-    const userId = req.headers['x-user-id'] || 'default';
+    const userId = workspaceOf(req);
     const credentials = getUserCredentials(userId);
 
     if (!credentials.token || !credentials.phoneNumberId) {
@@ -612,7 +622,7 @@ router.post('/test-reply', async (req, res) => {
       return res.status(400).json({ error: 'Phone number is required' });
     }
 
-    const userId = req.headers['x-user-id'] || 'default';
+    const userId = workspaceOf(req);
     const credentials = getUserCredentials(userId);
 
     if (!credentials.token || !credentials.phoneNumberId) {
@@ -725,8 +735,8 @@ router.post('/webhook', async (req, res) => {
         return;
       }
 
-      // Get credentials (try default user for now)
-      const userId = req.headers['x-user-id'] || 'default';
+      // Webhook is unauthenticated (Meta has no user token) → default workspace.
+      const userId = workspaceOf(req);
       const credentials = getUserCredentials(userId);
 
       // Check if credentials exist

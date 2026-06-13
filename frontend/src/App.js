@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './index.css';
+import { getAccessToken } from './auth/authConfig';
 
 const API_BASE = process.env.REACT_APP_API_URL || "";
 
@@ -1382,7 +1383,10 @@ Reply:`;
       });
 
       const queryParams = new URLSearchParams({ keyword, location });
-      const res = await fetch(`${API_BASE}/api/scrape?${queryParams}`);
+      const _token = getAccessToken();
+      const res = await fetch(`${API_BASE}/api/scrape?${queryParams}`, {
+        headers: _token ? { Authorization: `Bearer ${_token}` } : {}
+      });
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));

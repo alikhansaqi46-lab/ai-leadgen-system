@@ -25,6 +25,17 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Authentication & workspace resolution (S2).
+// AUTH_MODE=disabled (default) is a no-op that sets req.auth to the default workspace,
+// preserving pre-S2 behavior. supabase/dev modes require a valid Bearer token.
+const { requireAuth } = require('./middleware/auth');
+
+// The WhatsApp webhook must stay UNAUTHENTICATED (Meta calls it without a token).
+function whatsappAuthGate(req, res, next) {
+  if (req.path === '/webhook') return next();
+  return requireAuth(req, res, next);
+}
+
 // Request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -33,7 +44,7 @@ app.use((req, res, next) => {
 
 // Routes with error logging
 try {
-  app.use('/api/leads', require('./routes/leads'));
+  app.use('/api/leads', requireAuth, require('./routes/leads'));
   console.log('✅ leads routes loaded');
 } catch (err) {
   console.error('❌ Failed to load leads routes:', err);
@@ -42,7 +53,7 @@ try {
 // Scrape routes — mounted at /api/scrape
 // MUST be before static files and catch-all
 try {
-  app.use('/api/scrape', require('./routes/scrape'));
+  app.use('/api/scrape', requireAuth, require('./routes/scrape'));
   console.log('✅ scrape routes mounted at /api/scrape');
 } catch (err) {
   console.error('❌ Failed to load scrape routes:', err);
@@ -50,7 +61,7 @@ try {
 
 // WhatsApp Meta Cloud API routes
 try {
-  app.use('/api/whatsapp', require('./routes/whatsapp'));
+  app.use('/api/whatsapp', whatsappAuthGate, require('./routes/whatsapp'));
   console.log('✅ WhatsApp Meta API routes loaded');
 } catch (err) {
   console.error('❌ Failed to load WhatsApp routes:', err);
@@ -259,7 +270,7 @@ ${offer ? `<p><strong>Currently offering:</strong> ${offer}</p>` : ''}
 };
 
 // Email sending endpoint
-app.post('/api/send-email', async (req, res) => {
+app.post('/api/send-email', requireAuth, async (req, res) => {
   try {
     const { lead, message, subject, campaign } = req.body;
 
