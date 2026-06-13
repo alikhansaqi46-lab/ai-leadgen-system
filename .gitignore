@@ -14,6 +14,10 @@ frontend/build/
 backend/dist/
 dist/
 
+# Runtime data (leads/credentials JSON, CSV exports) — must never be committed
+backend/data/
+backend/temp/
+
 # Firebase service account
 serviceAccountKey.json
 

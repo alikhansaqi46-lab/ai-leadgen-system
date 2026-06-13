@@ -10,7 +10,8 @@ const { v4: uuidv4 } = require('uuid');
 router.get('/', async (req, res) => {
   try {
     const { country, niche, limit = 100 } = req.query;
-    const leads = await storage.getLeads({ country, niche, limit: parseInt(limit) });
+    const workspaceId = (req.auth && req.auth.workspaceId) || undefined;
+    const leads = await storage.getLeads({ workspaceId, country, niche, limit: parseInt(limit) });
     res.json({ leads, count: leads.length });
   } catch (error) {
     console.error('Error fetching leads:', error);
@@ -21,7 +22,8 @@ router.get('/', async (req, res) => {
 // Get unique countries and niches for filters
 router.get('/filters', async (req, res) => {
   try {
-    const filters = await storage.getFilters();
+    const workspaceId = (req.auth && req.auth.workspaceId) || undefined;
+    const filters = await storage.getFilters({ workspaceId });
     res.json(filters);
   } catch (error) {
     console.error('Error fetching filters:', error);
@@ -33,7 +35,8 @@ router.get('/filters', async (req, res) => {
 router.get('/export', async (req, res) => {
   try {
     const { country, niche } = req.query;
-    const leads = await storage.exportLeads({ country, niche });
+    const workspaceId = (req.auth && req.auth.workspaceId) || undefined;
+    const leads = await storage.exportLeads({ workspaceId, country, niche });
 
     if (leads.length === 0) {
       return res.status(404).json({ error: 'No leads found for export' });
@@ -84,7 +87,8 @@ router.get('/export', async (req, res) => {
 // Delete a lead
 router.delete('/:id', async (req, res) => {
   try {
-    await storage.deleteLeads([req.params.id]);
+    const workspaceId = (req.auth && req.auth.workspaceId) || undefined;
+    await storage.deleteLeads([req.params.id], { workspaceId });
     res.json({ message: 'Lead deleted successfully' });
   } catch (error) {
     console.error('Delete error:', error);
@@ -100,7 +104,8 @@ router.post('/bulk', async (req, res) => {
       return res.status(400).json({ error: 'No leads provided' });
     }
 
-    const saved = await storage.addLeads(leads);
+    const workspaceId = (req.auth && req.auth.workspaceId) || undefined;
+    const saved = await storage.addLeads(leads, { workspaceId });
     res.json({ message: 'Leads saved successfully', count: saved.length, leads: saved });
   } catch (error) {
     console.error('Bulk save error:', error);
@@ -116,7 +121,8 @@ router.post('/bulk-delete', async (req, res) => {
       return res.status(400).json({ error: 'No IDs provided' });
     }
 
-    await storage.deleteLeads(ids);
+    const workspaceId = (req.auth && req.auth.workspaceId) || undefined;
+    await storage.deleteLeads(ids, { workspaceId });
     res.json({ message: 'Leads deleted successfully', count: ids.length });
   } catch (error) {
     console.error('Bulk delete error:', error);
