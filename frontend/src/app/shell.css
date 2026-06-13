@@ -1,0 +1,159 @@
+/* App shell (S3) — modern SaaS layout: fixed sidebar + topbar + content. */
+:root {
+  --lf-bg: #0b1220;
+  --lf-sidebar: #0f172a;
+  --lf-sidebar-2: #111c33;
+  --lf-border: #e5e7eb;
+  --lf-text: #0f172a;
+  --lf-muted: #64748b;
+  --lf-primary: #4f46e5;
+  --lf-primary-600: #4338ca;
+  --lf-content-bg: #f6f7fb;
+  --lf-card: #ffffff;
+}
+
+.lf-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--lf-content-bg);
+  color: var(--lf-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Sidebar */
+.lf-sidebar {
+  width: 248px;
+  flex-shrink: 0;
+  background: var(--lf-sidebar);
+  color: #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 10px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  transition: width 0.15s ease;
+}
+.lf-sidebar.is-collapsed { width: 64px; }
+
+.lf-brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 16px; }
+.lf-brand-mark {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff; font-weight: 800; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.lf-brand-name { font-weight: 700; color: #fff; font-size: 15px; }
+
+.lf-nav { flex: 1; overflow-y: auto; }
+.lf-nav-group { margin-bottom: 14px; }
+.lf-nav-heading {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #64748b; padding: 6px 10px; font-weight: 700;
+}
+.lf-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 8px; margin: 2px 0;
+  color: #cbd5e1; text-decoration: none; font-size: 14px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.lf-nav-item:hover { background: var(--lf-sidebar-2); color: #fff; }
+.lf-nav-item.is-active { background: var(--lf-primary); color: #fff; }
+.lf-nav-icon { width: 18px; text-align: center; font-size: 14px; }
+.lf-nav-label { flex: 1; }
+.lf-nav-badge {
+  background: #ef4444; color: #fff; font-size: 11px; font-weight: 700;
+  border-radius: 10px; padding: 1px 7px;
+}
+
+.lf-nav-footer { border-top: 1px solid rgba(148, 163, 184, 0.15); padding-top: 10px; }
+.lf-usage { padding: 12px 10px 4px; }
+.lf-usage-label { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
+.lf-usage-bar { height: 6px; background: var(--lf-sidebar-2); border-radius: 4px; overflow: hidden; }
+.lf-usage-bar span { display: block; height: 100%; background: var(--lf-primary); }
+.lf-usage-meta { font-size: 11px; color: #94a3b8; margin-top: 6px; }
+
+/* Main */
+.lf-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.lf-topbar {
+  height: 58px; background: #fff; border-bottom: 1px solid var(--lf-border);
+  display: flex; align-items: center; gap: 14px; padding: 0 18px; position: sticky; top: 0; z-index: 5;
+}
+.lf-icon-btn {
+  border: 1px solid var(--lf-border); background: #fff; border-radius: 8px;
+  width: 34px; height: 34px; cursor: pointer; font-size: 16px; color: var(--lf-muted);
+}
+.lf-icon-btn:hover { background: #f1f5f9; }
+.lf-topbar-search { flex: 1; max-width: 460px; }
+.lf-topbar-search input {
+  width: 100%; height: 36px; border: 1px solid var(--lf-border); border-radius: 8px;
+  padding: 0 12px; font-size: 14px; background: #f8fafc;
+}
+.lf-topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.lf-workspace-pill {
+  background: #eef2ff; color: var(--lf-primary-600); font-size: 13px; font-weight: 600;
+  border-radius: 999px; padding: 5px 12px;
+}
+.lf-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; color: #475569;
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;
+}
+
+.lf-content { padding: 24px; flex: 1; color: var(--lf-text); }
+
+/* Pages */
+.lf-page { max-width: 1120px; margin: 0 auto; }
+.lf-page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 16px; }
+.lf-page-title { font-size: 22px; font-weight: 700; margin: 0; }
+.lf-page-subtitle { color: var(--lf-muted); margin: 4px 0 0; font-size: 14px; }
+
+.lf-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.lf-skeleton-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.lf-card { background: var(--lf-card); border: 1px solid var(--lf-border); border-radius: 12px; padding: 18px; }
+.lf-kpi-value { font-size: 28px; font-weight: 800; }
+.lf-kpi-label { color: var(--lf-muted); font-size: 13px; margin-top: 4px; }
+.lf-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.lf-card-title { font-size: 15px; font-weight: 700; margin: 0; }
+
+.lf-skeleton { position: relative; overflow: hidden; background: #eef1f6; min-height: 96px; }
+.lf-skeleton::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transform: translateX(-100%); animation: lf-shimmer 1.2s infinite;
+}
+@keyframes lf-shimmer { 100% { transform: translateX(100%); } }
+
+/* Scoped table styles — override the legacy dark-theme global table rules. */
+.lf-table { width: 100%; border-collapse: collapse; border-spacing: 0; font-size: 14px; color: var(--lf-text); }
+.lf-table thead { background: transparent; }
+.lf-table th { text-align: left; color: var(--lf-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; padding: 8px 10px; border-bottom: 1px solid var(--lf-border); white-space: nowrap; }
+.lf-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; color: var(--lf-text); background: transparent; vertical-align: middle; }
+.lf-table tbody tr { background: transparent; }
+.lf-table tbody tr:hover { background: #f8fafc; }
+.lf-table-wrap { padding: 6px 6px; overflow-x: auto; }
+
+.lf-toolbar { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.lf-input { height: 36px; border: 1px solid var(--lf-border); border-radius: 8px; padding: 0 10px; font-size: 14px; background: #fff; }
+
+.lf-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; border: 1px solid var(--lf-border); background: #fff; color: var(--lf-text); }
+.lf-btn-primary { background: var(--lf-primary); color: #fff; border-color: var(--lf-primary); }
+.lf-btn-primary:hover { background: var(--lf-primary-600); }
+
+.lf-link { color: var(--lf-primary-600); text-decoration: none; font-size: 13px; font-weight: 600; }
+.lf-link:hover { text-decoration: underline; }
+.lf-muted { color: var(--lf-muted); }
+.lf-note { background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af; border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; }
+.lf-alert { border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+.lf-alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+
+.lf-empty { background: var(--lf-card); border: 1px dashed var(--lf-border); border-radius: 12px; padding: 40px; text-align: center; }
+.lf-empty-badge { display: inline-block; background: #eef2ff; color: var(--lf-primary-600); font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 12px; margin-bottom: 12px; }
+.lf-empty-text { color: var(--lf-muted); max-width: 460px; margin: 0 auto 16px; font-size: 14px; }
+
+/* Classic workspace mount — restore the legacy app's native dark backdrop so it
+   renders exactly as before while embedded in the new shell. */
+.lf-classic { margin: -24px; background: #0a0f1c; min-height: calc(100vh - 58px); }
+
+@media (max-width: 900px) {
+  .lf-kpi-grid, .lf-skeleton-grid { grid-template-columns: repeat(2, 1fr); }
+}
