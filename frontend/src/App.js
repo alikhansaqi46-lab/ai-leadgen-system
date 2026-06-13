@@ -296,8 +296,10 @@ Example format: "Hi {name}, I found your {niche} in {city}. [Message about offer
       // Try to call OpenAI API (fallback if no API key configured)
       let generatedMessage = null;
 
-      // Check if OpenAI API key is available (you'd need to add OPENAI_API_KEY to env)
-      const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+      // SECURITY: never read the OpenAI key in the browser — it ships in the client bundle.
+      // TODO(S5): call a server-side endpoint (e.g. POST /api/ai/generate) instead.
+      // Until then, generation uses the local fallback templates below.
+      const apiKey = null;
 
       if (apiKey) {
         try {
@@ -486,8 +488,10 @@ Reply:`;
 
       let generatedReply = null;
 
-      // Try OpenAI API if key available
-      const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+      // SECURITY: never read the OpenAI key in the browser — it ships in the client bundle.
+      // TODO(S5): call a server-side endpoint (e.g. POST /api/ai/reply) instead.
+      // Until then, replies use the local fallback templates below.
+      const apiKey = null;
 
       if (apiKey) {
         try {

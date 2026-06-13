@@ -4,7 +4,7 @@ const axios = require("axios");
 const storage = require('../utils/leadStorage');
 const { v4: uuidv4 } = require('uuid');
 
-const SERPAPI_KEY = process.env.SERPAPI_KEY || "613bdd47bbd9ae7aedeece3b692e0d57cd1ca4f215c769c805688d515022f761";
+const SERPAPI_KEY = process.env.SERPAPI_KEY;
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -12,6 +12,15 @@ router.get("/", async (req, res) => {
   console.log("SCRAPE HIT", req.query);
 
   try {
+    if (!SERPAPI_KEY) {
+      console.error("[Scrape] SERPAPI_KEY is not configured");
+      return res.status(503).json({
+        error: "Scraping is not configured. Set the SERPAPI_KEY environment variable.",
+        setupRequired: true,
+        leads: []
+      });
+    }
+
     const { keyword, location } = req.query;
 
     if (!keyword || !location) {

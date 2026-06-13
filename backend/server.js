@@ -11,9 +11,15 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+// CORS allow-list is environment-driven. Set ALLOWED_ORIGINS to a comma-separated
+// list of origins (e.g. "https://app.example.com,https://staging.example.com").
+// FRONTEND_URL is kept as a single-origin fallback for backwards compatibility.
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || "http://localhost:3000")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 app.use(cors({
-  origin: [FRONTEND_URL, "http://localhost:3000", "https://ai-leadgen-system-1.onrender.com"],
+  origin: ALLOWED_ORIGINS,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
@@ -495,13 +501,18 @@ app.get('*', (req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
+  // Always log full detail server-side for debugging.
   console.error('GLOBAL ERROR:', err);
   console.error('Stack:', err.stack);
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: err.message,
-    stack: err.stack
-  });
+
+  // Never leak stack traces / internal messages to clients in production.
+  const isProduction = process.env.NODE_ENV === 'production';
+  const body = { error: 'Internal Server Error' };
+  if (!isProduction) {
+    body.message = err.message;
+    body.stack = err.stack;
+  }
+  res.status(500).json(body);
 });
 
 app.listen(PORT, '0.0.0.0', () => {
