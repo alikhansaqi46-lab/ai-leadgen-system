@@ -1,15 +1,31 @@
 /**
  * Lead Storage Module
- * Dual persistence: Firestore (when configured) → File-based JSON (universal fallback)
+ * Pluggable persistence selected by STORAGE_DRIVER:
+ *   - 'postgres'  → PostgreSQL / Supabase (via config/db.js)
+ *   - 'firestore' → Firestore
+ *   - 'json'      → file-based JSON (backend/data/leads.json)
+ *   - 'auto' (default) → Firestore if configured, else JSON file (legacy behavior)
  * Provides unified CRUD regardless of which backend is active.
  */
 
 const { db } = require('../config/firebase');
+const { query } = require('../config/db');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const DATA_FILE = path.join(__dirname, '..', 'data', 'leads.json');
+
+/* ==================== DRIVER SELECTION ==================== */
+
+function resolveDriver() {
+  const d = (process.env.STORAGE_DRIVER || 'auto').toLowerCase();
+  if (d === 'postgres' || d === 'pg') return 'postgres';
+  if (d === 'firestore') return 'firestore';
+  if (d === 'json' || d === 'file') return 'json';
+  // 'auto' (default): preserve legacy behavior exactly.
+  return db ? 'firestore' : 'json';
+}
 
 /* ==================== FILE HELPERS ==================== */
 
@@ -104,6 +120,48 @@ async function deleteLeadsFromFirestore(ids) {
   await batch.commit();
 }
 
+/* ==================== POSTGRES HELPERS ==================== */
+
+async function getLeadsFromPostgres({ country, niche, limit = 100 } = {}) {
+  const clauses = [];
+  const params = [];
+  if (country) { params.push(country); clauses.push(`country = $${params.length}`); }
+  if (niche) { params.push(niche); clauses.push(`niche = $${params.length}`); }
+  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  params.push(parseInt(limit) || 100);
+  const sql = `SELECT data FROM leads ${where} ORDER BY created_at DESC LIMIT $${params.length}`;
+  const result = await query(sql, params);
+  // `data` is the full lead object stored verbatim → identical shape to other drivers.
+  return result.rows.map(row => row.data);
+}
+
+async function saveLeadsToPostgres(leads) {
+  const saved = [];
+  for (const lead of leads) {
+    const result = await query(
+      `INSERT INTO leads (id, name, phone, country, niche, created_at, data)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (id) DO NOTHING
+       RETURNING data`,
+      [
+        lead.id,
+        lead.name || null,
+        lead.phone || null,
+        lead.country || null,
+        lead.niche || null,
+        lead.createdAt || new Date().toISOString(),
+        JSON.stringify(lead)
+      ]
+    );
+    if (result.rows.length > 0) saved.push(result.rows[0].data);
+  }
+  return saved;
+}
+
+async function deleteLeadsFromPostgres(ids) {
+  await query(`DELETE FROM leads WHERE id = ANY($1)`, [ids]);
+}
+
 /* ==================== UNIFIED API ==================== */
 
 const storage = {
@@ -111,7 +169,13 @@ const storage = {
    * Get all leads (newest first)
    */
   async getLeads(options = {}) {
-    if (db) {
+    const driver = resolveDriver();
+
+    if (driver === 'postgres') {
+      return await getLeadsFromPostgres(options);
+    }
+
+    if (driver === 'firestore') {
       try {
         return await getLeadsFromFirestore(options);
       } catch (err) {
@@ -133,7 +197,22 @@ const storage = {
       source: lead.source || 'scraped'
     }));
 
-    if (db) {
+    const driver = resolveDriver();
+
+    if (driver === 'postgres') {
+      // Read existing for dedup, then insert the unique leads.
+      const existing = await getLeadsFromPostgres({ limit: 10000 });
+      const unique = deduplicateLeads(existing, enriched);
+      if (unique.length === 0) {
+        console.log('[LeadStorage] All leads are duplicates, nothing added');
+        return [];
+      }
+      const saved = await saveLeadsToPostgres(unique);
+      console.log(`[LeadStorage] Saved ${saved.length} leads to Postgres`);
+      return saved;
+    }
+
+    if (driver === 'firestore') {
       try {
         // Read existing for dedup
         const existing = await getLeadsFromFirestore({ limit: 10000 });
@@ -167,7 +246,15 @@ const storage = {
    * Delete leads by ID array
    */
   async deleteLeads(ids) {
-    if (db) {
+    const driver = resolveDriver();
+
+    if (driver === 'postgres') {
+      await deleteLeadsFromPostgres(ids);
+      console.log(`[LeadStorage] Deleted ${ids.length} leads from Postgres`);
+      return;
+    }
+
+    if (driver === 'firestore') {
       try {
         await deleteLeadsFromFirestore(ids);
         console.log(`[LeadStorage] Deleted ${ids.length} leads from Firestore`);
