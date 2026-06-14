@@ -3,6 +3,7 @@ import AppShell from './AppShell';
 import DashboardPage from '../features/dashboard/DashboardPage';
 import LeadsPage from '../features/leads/LeadsPage';
 import WorkspacePage from '../features/workspace/WorkspacePage';
+import AIAgentPage from '../features/ai/AIAgentPage';
 import ComingSoon from '../features/common/ComingSoon';
 
 export default function AppRoutes() {
@@ -25,10 +26,7 @@ export default function AppRoutes() {
           path="email"
           element={<ComingSoon title="Email" description="Send and sequence email outreach." phase="UI in S4" useClassic />}
         />
-        <Route
-          path="ai-agent"
-          element={<ComingSoon title="AI Agent" description="Qualify leads, draft replies and follow-ups." phase="Built in S5" />}
-        />
+        <Route path="ai-agent" element={<AIAgentPage />} />
         <Route
           path="inbox"
           element={<ComingSoon title="Inbox" description="Two-way conversations with approve-before-send AI replies." phase="Built in S5" />}
