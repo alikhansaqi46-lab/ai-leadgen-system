@@ -188,6 +188,55 @@ async function testDraftIsolation(driver) {
   await cleanupDrafts(draftStorage);
 }
 
+async function cleanupConversations(convStorage) {
+  for (const ws of [WS_A, WS_B]) {
+    const convs = await convStorage.getConversations({ workspaceId: ws });
+    // No public delete API for conversations in V1; tests use a dedicated lead id
+    // and assert by isolation, so a residual row from a prior run is filtered by
+    // workspace anyway. We simply re-read fresh state below.
+    void convs;
+  }
+}
+
+async function testConversationIsolation(driver) {
+  console.log(`\n=== Conversation isolation [STORAGE_DRIVER=${driver}] ===`);
+  process.env.STORAGE_DRIVER = driver;
+  const convStorage = require('../utils/conversationStorage');
+
+  await cleanupConversations(convStorage);
+
+  const LEAD = `lead-conv-${Date.now()}`;
+
+  // A and B each start a conversation for the SAME lead id + channel.
+  const convA = await convStorage.createConversation({ leadId: LEAD, channel: 'email', subject: 'A subj' }, { workspaceId: WS_A });
+  const convB = await convStorage.createConversation({ leadId: LEAD, channel: 'email', subject: 'B subj' }, { workspaceId: WS_B });
+  check(!!convA.id && !!convB.id && convA.id !== convB.id, 'A and B each created a distinct conversation for the same lead');
+
+  await convStorage.addMessage(convA.id, { direction: 'outbound', body: 'hello from A', source: 'ai_draft' }, { workspaceId: WS_A });
+  await convStorage.addMessage(convB.id, { direction: 'outbound', body: 'hello from B', source: 'ai_draft' }, { workspaceId: WS_B });
+
+  const listA = await convStorage.getConversations({ workspaceId: WS_A });
+  const listB = await convStorage.getConversations({ workspaceId: WS_B });
+  check(listA.some(c => c.id === convA.id) && !listA.some(c => c.id === convB.id), 'A sees only its own conversation');
+  check(listB.some(c => c.id === convB.id) && !listB.some(c => c.id === convA.id), 'B does NOT see A conversation');
+
+  // Cross-workspace message read must return nothing for B's conversation when asked as A.
+  const crossMsgs = await convStorage.getMessages(convB.id, { workspaceId: WS_A });
+  check(crossMsgs.length === 0, 'A cannot read messages of B conversation (isolation enforced)');
+
+  // Cross-workspace append must be refused (returns null), B's thread unchanged.
+  const crossAdd = await convStorage.addMessage(convB.id, { body: 'intruder' }, { workspaceId: WS_A });
+  check(crossAdd === null, 'A cannot append to B conversation (returns null)');
+  const bMsgs = await convStorage.getMessages(convB.id, { workspaceId: WS_B });
+  check(bMsgs.length === 1 && bMsgs[0].body === 'hello from B', 'B thread unchanged after A attempt');
+
+  // Owner append works and bumps the thread.
+  const ownAdd = await convStorage.addMessage(convA.id, { body: 'second from A' }, { workspaceId: WS_A });
+  check(!!ownAdd, 'A can append to its own conversation');
+  const aMsgs = await convStorage.getMessages(convA.id, { workspaceId: WS_A });
+  check(aMsgs.length === 2, 'A thread has both messages in order');
+}
+
 function mockRes() {
   return {
     statusCode: null,
@@ -240,10 +289,12 @@ async function main() {
   await testStorageIsolation('json');
   await testScoringIsolation('json');
   await testDraftIsolation('json');
+  await testConversationIsolation('json');
   if (process.env.DATABASE_URL) {
     await testStorageIsolation('postgres');
     await testScoringIsolation('postgres');
     await testDraftIsolation('postgres');
+    await testConversationIsolation('postgres');
   } else {
     console.log('\n(skipping Postgres storage isolation — DATABASE_URL not set)');
   }

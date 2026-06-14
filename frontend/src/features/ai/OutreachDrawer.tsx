@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   generateOutreach,
   getDrafts,
   approveDraft,
   rejectDraft,
+  startConversationFromDraft,
   OutreachDraft,
   DraftStatus,
   Lead,
@@ -19,13 +21,17 @@ const STATUS_BADGE: Record<DraftStatus, string> = {
 function DraftCard({
   draft,
   busy,
+  moved,
   onApprove,
   onReject,
+  onMoveToInbox,
 }: {
   draft: OutreachDraft;
   busy: boolean;
+  moved: boolean;
   onApprove: () => void;
   onReject: () => void;
+  onMoveToInbox: () => void;
 }) {
   return (
     <div className="lf-draft">
@@ -53,6 +59,11 @@ function DraftCard({
         >
           Reject
         </button>
+        {draft.status === 'approved' && (
+          <button className="lf-btn" onClick={onMoveToInbox} disabled={busy || moved}>
+            {moved ? 'In Inbox ✓' : 'Move to Inbox'}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -71,6 +82,8 @@ export default function OutreachDrawer({
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [moved, setMoved] = useState<Set<string>>(new Set());
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
@@ -115,6 +128,20 @@ export default function OutreachDrawer({
     }
   }
 
+  async function moveToInbox(id: string) {
+    try {
+      setBusyId(id);
+      setError(null);
+      await startConversationFromDraft(id);
+      setMoved((prev) => new Set(prev).add(id));
+      setNotice('Added to the Inbox — view it under Inbox.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not move to inbox');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <>
       <div className="lf-drawer-backdrop" onClick={onClose} />
@@ -139,6 +166,11 @@ export default function OutreachDrawer({
           {generating ? 'Generating…' : drafts.length ? 'Regenerate drafts' : 'Generate outreach'}
         </button>
 
+        {notice && (
+          <div className="lf-alert">
+            {notice} <Link className="lf-link" to="/app/inbox">Open Inbox</Link>
+          </div>
+        )}
         {error && <div className="lf-alert lf-alert-error">{error}</div>}
         {loading && <div className="lf-card lf-skeleton" style={{ height: 160 }} />}
 
@@ -155,8 +187,10 @@ export default function OutreachDrawer({
               key={d.id}
               draft={d}
               busy={busyId === d.id}
+              moved={moved.has(d.id)}
               onApprove={() => setStatus(d.id, 'approve')}
               onReject={() => setStatus(d.id, 'reject')}
+              onMoveToInbox={() => moveToInbox(d.id)}
             />
           ))}
       </aside>

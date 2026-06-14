@@ -4,6 +4,7 @@ import DashboardPage from '../features/dashboard/DashboardPage';
 import LeadsPage from '../features/leads/LeadsPage';
 import WorkspacePage from '../features/workspace/WorkspacePage';
 import AIAgentPage from '../features/ai/AIAgentPage';
+import InboxPage from '../features/inbox/InboxPage';
 import ComingSoon from '../features/common/ComingSoon';
 
 export default function AppRoutes() {
@@ -27,10 +28,7 @@ export default function AppRoutes() {
           element={<ComingSoon title="Email" description="Send and sequence email outreach." phase="UI in S4" useClassic />}
         />
         <Route path="ai-agent" element={<AIAgentPage />} />
-        <Route
-          path="inbox"
-          element={<ComingSoon title="Inbox" description="Two-way conversations with approve-before-send AI replies." phase="Built in S5" />}
-        />
+        <Route path="inbox" element={<InboxPage />} />
         <Route
           path="automations"
           element={<ComingSoon title="Automations" description="Trigger → condition → action rules across modules." phase="Post-S5" />}

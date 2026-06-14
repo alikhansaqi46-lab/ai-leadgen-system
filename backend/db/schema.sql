@@ -71,3 +71,39 @@ CREATE TABLE IF NOT EXISTS outreach_drafts (
 CREATE INDEX IF NOT EXISTS idx_drafts_workspace ON outreach_drafts (workspace_id);
 CREATE INDEX IF NOT EXISTS idx_drafts_ws_lead   ON outreach_drafts (workspace_id, lead_id);
 CREATE INDEX IF NOT EXISTS idx_drafts_ws_status ON outreach_drafts (workspace_id, status);
+
+-- =====================================================================
+-- S5.3: Inbox foundation — conversations + messages.
+-- A conversation groups two-way outreach for one (lead, channel).
+-- Messages are appended (outbound from approved drafts / manual, inbound later).
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS conversations (
+  id              TEXT PRIMARY KEY,
+  lead_id         TEXT NOT NULL,
+  workspace_id    TEXT NOT NULL DEFAULT 'default',
+  channel         TEXT NOT NULL,                  -- 'email' | 'whatsapp'
+  status          TEXT NOT NULL DEFAULT 'open',   -- 'open' | 'closed'
+  subject         TEXT,
+  last_message_at TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_conversations_workspace ON conversations (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_ws_lead   ON conversations (workspace_id, lead_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_ws_recent ON conversations (workspace_id, last_message_at DESC);
+
+CREATE TABLE IF NOT EXISTS messages (
+  id              TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL,
+  workspace_id    TEXT NOT NULL DEFAULT 'default',
+  direction       TEXT NOT NULL,                  -- 'outbound' | 'inbound'
+  channel         TEXT NOT NULL,
+  body            TEXT NOT NULL,
+  source          TEXT,                           -- 'ai_draft' | 'manual' | 'inbound'
+  draft_id        TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_workspace ON messages (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_messages_ws_conv   ON messages (workspace_id, conversation_id, created_at);
