@@ -59,6 +59,14 @@ try {
   console.error('❌ Failed to load scrape routes:', err);
 }
 
+// AI Sales Agent routes (S5) — qualification, outreach, inbox
+try {
+  app.use('/api/ai', requireAuth, require('./routes/ai'));
+  console.log('✅ AI routes mounted at /api/ai');
+} catch (err) {
+  console.error('❌ Failed to load AI routes:', err);
+}
+
 // WhatsApp Meta Cloud API routes
 try {
   app.use('/api/whatsapp', whatsappAuthGate, require('./routes/whatsapp'));

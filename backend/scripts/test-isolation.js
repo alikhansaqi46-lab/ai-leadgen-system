@@ -89,6 +89,56 @@ async function testStorageIsolation(driver) {
   await cleanup(storage);
 }
 
+async function cleanupScores(scoreStorage) {
+  for (const ws of [WS_A, WS_B]) {
+    const scores = await scoreStorage.getScores({ workspaceId: ws });
+    if (scores.length) {
+      await scoreStorage.deleteScores(scores.map(s => s.leadId), { workspaceId: ws });
+    }
+  }
+}
+
+async function testScoringIsolation(driver) {
+  console.log(`\n=== Score isolation [STORAGE_DRIVER=${driver}] ===`);
+  process.env.STORAGE_DRIVER = driver;
+  const scoreStorage = require('../utils/scoreStorage');
+
+  await cleanupScores(scoreStorage);
+
+  const LEAD = 'lead-shared-1';
+  // A and B both score the SAME lead id, with different results.
+  await scoreStorage.upsertScores(
+    [{ leadId: LEAD, score: 75, priority: 'hot', breakdown: { factors: [], total: 75, max: 100 }, model: 'heuristic' }],
+    { workspaceId: WS_A },
+  );
+  await scoreStorage.upsertScores(
+    [{ leadId: LEAD, score: 50, priority: 'warm', breakdown: { factors: [], total: 50, max: 100 }, model: 'heuristic' }],
+    { workspaceId: WS_B },
+  );
+
+  const scoresA = await scoreStorage.getScores({ workspaceId: WS_A });
+  const scoresB = await scoreStorage.getScores({ workspaceId: WS_B });
+  check(scoresA.length === 1 && scoresA[0].score === 75, 'A sees only its own score (75)');
+  check(scoresB.length === 1 && scoresB[0].score === 50, 'B sees only its own score (50)');
+  check(!scoresA.some(s => s.score === 50), 'A does NOT see B score');
+  check(scoresA[0].workspaceId === WS_A, 'A score is stamped with workspaceId');
+
+  // Re-qualifying upserts (no duplicate row) within a workspace.
+  await scoreStorage.upsertScores(
+    [{ leadId: LEAD, score: 90, priority: 'hot', breakdown: { factors: [], total: 90, max: 100 }, model: 'heuristic' }],
+    { workspaceId: WS_A },
+  );
+  const scoresAUpdated = await scoreStorage.getScores({ workspaceId: WS_A });
+  check(scoresAUpdated.length === 1 && scoresAUpdated[0].score === 90, 're-qualify upserts in place (no dup, score=90)');
+
+  // Cross-workspace delete must NOT remove B's score.
+  await scoreStorage.deleteScores([LEAD], { workspaceId: WS_A });
+  const scoresBAfter = await scoreStorage.getScores({ workspaceId: WS_B });
+  check(scoresBAfter.length === 1 && scoresBAfter[0].score === 50, 'A delete does NOT remove B score (isolation enforced)');
+
+  await cleanupScores(scoreStorage);
+}
+
 function mockRes() {
   return {
     statusCode: null,
@@ -139,8 +189,10 @@ function testAuthMiddleware() {
 
 async function main() {
   await testStorageIsolation('json');
+  await testScoringIsolation('json');
   if (process.env.DATABASE_URL) {
     await testStorageIsolation('postgres');
+    await testScoringIsolation('postgres');
   } else {
     console.log('\n(skipping Postgres storage isolation — DATABASE_URL not set)');
   }

@@ -26,3 +26,23 @@ CREATE INDEX IF NOT EXISTS idx_leads_country    ON leads (country);
 CREATE INDEX IF NOT EXISTS idx_leads_niche      ON leads (niche);
 CREATE INDEX IF NOT EXISTS idx_leads_workspace  ON leads (workspace_id);
 CREATE INDEX IF NOT EXISTS idx_leads_ws_created ON leads (workspace_id, created_at DESC);
+
+-- =====================================================================
+-- S5.1: AI lead qualification scores.
+-- One row per (workspace, lead); re-qualifying upserts on the PK.
+-- breakdown holds the explainable factor list verbatim (JSONB).
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS lead_scores (
+  lead_id      TEXT NOT NULL,
+  workspace_id TEXT NOT NULL DEFAULT 'default',
+  score        INTEGER NOT NULL,
+  priority     TEXT NOT NULL,                 -- 'hot' | 'warm' | 'cold'
+  breakdown    JSONB,
+  model        TEXT,                          -- 'heuristic' | 'openai:<model>'
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (workspace_id, lead_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_scores_workspace ON lead_scores (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_scores_priority  ON lead_scores (workspace_id, priority);
+CREATE INDEX IF NOT EXISTS idx_scores_ws_score  ON lead_scores (workspace_id, score DESC);

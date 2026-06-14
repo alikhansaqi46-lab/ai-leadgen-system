@@ -83,4 +83,51 @@ export async function getWhatsAppStatus(): Promise<WhatsAppStatus> {
   return data;
 }
 
+// ===================== S5.1: AI Qualification =====================
+
+export type LeadPriority = 'hot' | 'warm' | 'cold';
+
+export interface ScoreFactor {
+  key: string;
+  label: string;
+  points: number;
+  max: number;
+  reasons: string[];
+}
+
+export interface ScoreBreakdown {
+  factors: ScoreFactor[];
+  total: number;
+  max: number;
+}
+
+// A lead joined with its (possibly null) AI qualification score.
+export interface ScoredLead {
+  leadId: string;
+  lead: Lead;
+  score: number | null;
+  priority: LeadPriority | null;
+  breakdown: ScoreBreakdown | null;
+  model: string | null;
+  scoredAt: string | null;
+}
+
+export interface ScoresResponse {
+  scores: ScoredLead[];
+  count: number;
+  model?: string;
+  mode?: string;
+}
+
+export async function qualifyLeads(leadIds?: string[]): Promise<ScoresResponse> {
+  const body = leadIds && leadIds.length > 0 ? { leadIds } : {};
+  const { data } = await client.post<ScoresResponse>('/api/ai/qualify', body);
+  return data;
+}
+
+export async function getScores(): Promise<ScoresResponse> {
+  const { data } = await client.get<ScoresResponse>('/api/ai/scores');
+  return data;
+}
+
 export default client;
