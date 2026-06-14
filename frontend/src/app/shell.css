@@ -165,6 +165,21 @@
 .lf-factor:last-child { border-bottom: none; }
 .lf-factor-reasons { color: var(--lf-muted); font-size: 12px; }
 
+/* S5.2 — outreach drawer (slide-over) + draft cards */
+.lf-drawer-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); z-index: 40; }
+.lf-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 460px; max-width: 92vw;
+  background: #f8fafc; border-left: 1px solid var(--lf-border);
+  z-index: 41; padding: 20px; overflow-y: auto; box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
+}
+.lf-drawer-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.lf-draft { background: var(--lf-card); border: 1px solid var(--lf-border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+.lf-draft-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.lf-draft-channel { font-size: 13px; font-weight: 700; color: var(--lf-text); text-transform: capitalize; }
+.lf-draft-subject { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.lf-draft-body { white-space: pre-wrap; font-family: inherit; font-size: 13px; color: var(--lf-text); background: #f8fafc; border: 1px solid var(--lf-border); border-radius: 8px; padding: 10px; margin: 0 0 10px; }
+.lf-draft-actions { display: flex; gap: 8px; }
+
 /* Classic workspace mount — restore the legacy app's native dark backdrop so it
    renders exactly as before while embedded in the new shell. */
 .lf-classic { margin: -24px; background: #0a0f1c; min-height: calc(100vh - 58px); }

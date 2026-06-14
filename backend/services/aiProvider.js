@@ -13,6 +13,7 @@
  */
 
 const scoring = require('./scoring');
+const outreach = require('./outreach');
 
 function getMode() {
   return (process.env.AI_MODE || 'heuristic').toLowerCase();
@@ -45,4 +46,17 @@ function qualifyLeads(leads, options = {}) {
   });
 }
 
-module.exports = { getMode, getModel, qualifyLeads };
+/**
+ * Generate outreach drafts for a single lead.
+ * Returns [{ channel, kind, step, waitDays, subject, body, model }].
+ */
+function generateOutreach(lead, options = {}) {
+  const mode = getMode();
+  if (mode === 'openai') {
+    console.warn('[aiProvider] AI_MODE=openai not yet implemented for outreach — using heuristic templates.');
+  }
+  const model = mode === 'openai' ? 'heuristic(openai-fallback)' : 'heuristic';
+  return outreach.generateOutreach(lead, options).map((draft) => ({ ...draft, model }));
+}
+
+module.exports = { getMode, getModel, qualifyLeads, generateOutreach };

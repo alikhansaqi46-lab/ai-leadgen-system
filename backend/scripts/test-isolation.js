@@ -139,6 +139,55 @@ async function testScoringIsolation(driver) {
   await cleanupScores(scoreStorage);
 }
 
+async function cleanupDrafts(draftStorage) {
+  for (const ws of [WS_A, WS_B]) {
+    for (const leadId of ['lead-shared-1', 'lead-shared-2']) {
+      await draftStorage.deleteDraftsForLead(leadId, { workspaceId: ws });
+    }
+  }
+}
+
+async function testDraftIsolation(driver) {
+  console.log(`\n=== Draft isolation [STORAGE_DRIVER=${driver}] ===`);
+  process.env.STORAGE_DRIVER = driver;
+  const draftStorage = require('../utils/draftStorage');
+
+  await cleanupDrafts(draftStorage);
+
+  const LEAD = 'lead-shared-1';
+  const tplA = [{ channel: 'email', kind: 'initial', step: 0, waitDays: 0, subject: 'A', body: 'A body', model: 'heuristic' }];
+  const tplB = [{ channel: 'whatsapp', kind: 'initial', step: 0, waitDays: 0, subject: null, body: 'B body', model: 'heuristic' }];
+
+  const createdA = await draftStorage.replaceDraftsForLead(LEAD, tplA, { workspaceId: WS_A });
+  const createdB = await draftStorage.replaceDraftsForLead(LEAD, tplB, { workspaceId: WS_B });
+  check(createdA.length === 1 && createdB.length === 1, 'A and B each created 1 draft for same lead id');
+
+  const draftsA = await draftStorage.getDrafts({ workspaceId: WS_A });
+  const draftsB = await draftStorage.getDrafts({ workspaceId: WS_B });
+  check(draftsA.length === 1 && draftsA[0].body === 'A body', 'A sees only its own draft');
+  check(draftsB.length === 1 && draftsB[0].body === 'B body', 'B sees only its own draft');
+  check(!draftsA.some(d => d.body === 'B body'), 'A does NOT see B draft');
+
+  // Cross-workspace status change must NOT touch B's draft (id belongs to B).
+  const bDraftId = draftsB[0].id;
+  const crossUpdate = await draftStorage.setDraftStatus(bDraftId, 'approved', { workspaceId: WS_A });
+  check(crossUpdate === null, 'A cannot approve B draft (returns null)');
+  const draftsBStill = await draftStorage.getDrafts({ workspaceId: WS_B });
+  check(draftsBStill[0].status === 'draft', 'B draft status unchanged after A attempt');
+
+  // Owner can approve its own draft.
+  const okUpdate = await draftStorage.setDraftStatus(draftsA[0].id, 'approved', { workspaceId: WS_A });
+  check(okUpdate && okUpdate.status === 'approved', 'A can approve its own draft');
+
+  // Regenerating replaces (no pile-up).
+  const regen = await draftStorage.replaceDraftsForLead(LEAD, [...tplA, { channel: 'email', kind: 'followup', step: 1, waitDays: 3, subject: 'F', body: 'F body', model: 'heuristic' }], { workspaceId: WS_A });
+  check(regen.length === 2, 'regenerate produces a fresh set');
+  const afterRegen = await draftStorage.getDrafts({ workspaceId: WS_A });
+  check(afterRegen.length === 2, 'regenerate replaced old drafts (no pile-up)');
+
+  await cleanupDrafts(draftStorage);
+}
+
 function mockRes() {
   return {
     statusCode: null,
@@ -190,9 +239,11 @@ function testAuthMiddleware() {
 async function main() {
   await testStorageIsolation('json');
   await testScoringIsolation('json');
+  await testDraftIsolation('json');
   if (process.env.DATABASE_URL) {
     await testStorageIsolation('postgres');
     await testScoringIsolation('postgres');
+    await testDraftIsolation('postgres');
   } else {
     console.log('\n(skipping Postgres storage isolation — DATABASE_URL not set)');
   }

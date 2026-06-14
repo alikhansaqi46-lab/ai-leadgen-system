@@ -130,4 +130,60 @@ export async function getScores(): Promise<ScoresResponse> {
   return data;
 }
 
+// ===================== S5.2: Outreach drafts + approval =====================
+
+export type OutreachChannel = 'email' | 'whatsapp';
+export type OutreachKind = 'initial' | 'followup';
+export type DraftStatus = 'draft' | 'approved' | 'rejected';
+
+export interface OutreachDraft {
+  id: string;
+  leadId: string;
+  channel: OutreachChannel;
+  kind: OutreachKind;
+  step: number;
+  waitDays: number;
+  subject: string | null;
+  body: string;
+  status: DraftStatus;
+  model: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lead?: Lead | null;
+}
+
+export interface OutreachResponse {
+  leadId: string;
+  drafts: OutreachDraft[];
+  count: number;
+  model?: string;
+}
+
+export interface DraftsResponse {
+  drafts: OutreachDraft[];
+  count: number;
+  mode?: string;
+}
+
+export async function generateOutreach(leadId: string): Promise<OutreachResponse> {
+  const { data } = await client.post<OutreachResponse>('/api/ai/outreach', { leadId });
+  return data;
+}
+
+export async function getDrafts(leadId?: string): Promise<DraftsResponse> {
+  const params = leadId ? { leadId } : {};
+  const { data } = await client.get<DraftsResponse>('/api/ai/drafts', { params });
+  return data;
+}
+
+export async function approveDraft(id: string): Promise<OutreachDraft> {
+  const { data } = await client.post<{ draft: OutreachDraft }>(`/api/ai/drafts/${id}/approve`);
+  return data.draft;
+}
+
+export async function rejectDraft(id: string): Promise<OutreachDraft> {
+  const { data } = await client.post<{ draft: OutreachDraft }>(`/api/ai/drafts/${id}/reject`);
+  return data.draft;
+}
+
 export default client;
