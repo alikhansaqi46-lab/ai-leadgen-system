@@ -246,7 +246,7 @@ function mockRes() {
   };
 }
 
-function testAuthMiddleware() {
+async function testAuthMiddleware() {
   console.log('\n=== Auth middleware ===');
   const jwt = require('jsonwebtoken');
 
@@ -254,33 +254,39 @@ function testAuthMiddleware() {
   delete require.cache[require.resolve('../middleware/auth')];
   const { requireAuth } = require('../middleware/auth');
 
+  // requireAuth is async; await the next()/response settling before asserting.
+  function runAuth(req, res) {
+    return new Promise((resolve) => {
+      Promise.resolve(requireAuth(req, res, () => { req.__next = true; resolve(); }))
+        .then(() => resolve());
+    });
+  }
+
   // disabled: no token required, default workspace.
   process.env.AUTH_MODE = 'disabled';
-  let nextCalled = false;
   let req = { headers: {} };
-  requireAuth(req, mockRes(), () => { nextCalled = true; });
-  check(nextCalled && req.auth && req.auth.workspaceId === (process.env.DEFAULT_WORKSPACE_ID || 'default'), 'disabled mode → next() + default workspace');
+  await runAuth(req, mockRes());
+  check(req.__next && req.auth && req.auth.workspaceId === (process.env.DEFAULT_WORKSPACE_ID || 'default'), 'disabled mode → next() + default workspace');
 
   // dev: missing token → 401.
   process.env.AUTH_MODE = 'dev';
   process.env.DEV_AUTH_SECRET = 'test-secret';
   let res = mockRes();
-  nextCalled = false;
-  requireAuth({ headers: {} }, res, () => { nextCalled = true; });
-  check(!nextCalled && res.statusCode === 401, 'dev mode → 401 without token');
+  req = { headers: {} };
+  await runAuth(req, res);
+  check(!req.__next && res.statusCode === 401, 'dev mode → 401 without token');
 
   // dev: invalid token → 401.
   res = mockRes();
-  nextCalled = false;
-  requireAuth({ headers: { authorization: 'Bearer not.a.jwt' } }, res, () => { nextCalled = true; });
-  check(!nextCalled && res.statusCode === 401, 'dev mode → 401 with invalid token');
+  req = { headers: { authorization: 'Bearer not.a.jwt' } };
+  await runAuth(req, res);
+  check(!req.__next && res.statusCode === 401, 'dev mode → 401 with invalid token');
 
   // dev: valid token → next() + workspace from claim.
   const token = jwt.sign({ sub: 'user-1', app_metadata: { workspace_id: 'ws-claim-9' } }, 'test-secret', { algorithm: 'HS256' });
   req = { headers: { authorization: `Bearer ${token}` } };
-  nextCalled = false;
-  requireAuth(req, mockRes(), () => { nextCalled = true; });
-  check(nextCalled && req.auth.workspaceId === 'ws-claim-9', 'dev mode → valid token resolves workspace from claim');
+  await runAuth(req, mockRes());
+  check(req.__next && req.auth.workspaceId === 'ws-claim-9', 'dev mode → valid token resolves workspace from claim');
 
   process.env.AUTH_MODE = 'disabled';
 }
@@ -298,7 +304,7 @@ async function main() {
   } else {
     console.log('\n(skipping Postgres storage isolation — DATABASE_URL not set)');
   }
-  testAuthMiddleware();
+  await testAuthMiddleware();
 
   console.log(`\n${failures === 0 ? 'ALL ISOLATION TESTS PASSED' : failures + ' TEST(S) FAILED'}`);
   process.exit(failures === 0 ? 0 : 1);

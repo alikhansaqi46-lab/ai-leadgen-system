@@ -20,19 +20,21 @@ exactly — no login, single `default` workspace.
 | AUTH_MODE | Token required | Workspace |
 |-----------|----------------|-----------|
 | `disabled` (default) | no | `DEFAULT_WORKSPACE_ID` (`default`) |
-| `supabase` | yes (Supabase JWT, HS256) | `app_metadata.workspace_id` claim, else `sub` |
+| `supabase` | yes (Supabase JWT; ES256/RS256 via JWKS, or legacy HS256) | `app_metadata.workspace_id` claim, else `sub` |
 | `dev` | yes (HMAC, `DEV_AUTH_SECRET`) | claim, else `sub` — testing only |
 | `clerk` | — | not implemented in S2 |
 
 ## Enabling Supabase Auth (when ready)
 
 1. Provision a Supabase project (also unblocks the deferred S1 Postgres cutover).
-2. Backend env:
+2. Backend env (current projects use asymmetric JWKS — no secret):
    ```
    AUTH_MODE=supabase
-   SUPABASE_JWT_SECRET=<Project Settings → API → JWT Secret>
+   SUPABASE_URL=<Project Settings → API → Project URL>   # tokens verified via JWKS
    DEFAULT_WORKSPACE_ID=default
+   # legacy HS256 projects only: SUPABASE_JWT_SECRET=<JWT Secret>
    ```
+   See `docs/SUPABASE_GOLIVE.md` for the full cutover runbook.
 3. Frontend env:
    ```
    REACT_APP_AUTH_MODE=supabase
