@@ -186,4 +186,77 @@ export async function rejectDraft(id: string): Promise<OutreachDraft> {
   return data.draft;
 }
 
+// ===================== S5.3: Inbox (conversations + messages) =====================
+
+export type MessageDirection = 'outbound' | 'inbound';
+export type ConversationStatus = 'open' | 'closed';
+
+export interface Message {
+  id: string;
+  conversationId: string;
+  direction: MessageDirection;
+  channel: OutreachChannel;
+  body: string;
+  source: string | null;
+  draftId: string | null;
+  createdAt: string;
+}
+
+export interface Conversation {
+  id: string;
+  leadId: string;
+  channel: OutreachChannel;
+  status: ConversationStatus;
+  subject: string | null;
+  lastMessageAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lead?: Lead | null;
+  messageCount?: number;
+  lastMessage?: { body: string; direction: MessageDirection; createdAt: string } | null;
+}
+
+export interface ConversationsResponse {
+  conversations: Conversation[];
+  count: number;
+}
+
+export interface MessagesResponse {
+  conversation: Conversation;
+  messages: Message[];
+  count: number;
+}
+
+export async function getConversations(): Promise<ConversationsResponse> {
+  const { data } = await client.get<ConversationsResponse>('/api/ai/conversations');
+  return data;
+}
+
+export async function getMessages(conversationId: string): Promise<MessagesResponse> {
+  const { data } = await client.get<MessagesResponse>(`/api/ai/conversations/${conversationId}/messages`);
+  return data;
+}
+
+export async function sendMessage(
+  conversationId: string,
+  body: string,
+  direction: MessageDirection = 'outbound'
+): Promise<Message> {
+  const { data } = await client.post<{ message: Message }>(
+    `/api/ai/conversations/${conversationId}/messages`,
+    { body, direction }
+  );
+  return data.message;
+}
+
+export async function startConversationFromDraft(
+  draftId: string
+): Promise<{ conversation: Conversation; message: Message }> {
+  const { data } = await client.post<{ conversation: Conversation; message: Message }>(
+    '/api/ai/conversations/from-draft',
+    { draftId }
+  );
+  return data;
+}
+
 export default client;

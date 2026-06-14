@@ -124,6 +124,13 @@ const draftStorage = {
     );
   },
 
+  /** Fetch a single draft by id (workspace-scoped) or null. */
+  async getDraftById(id, options = {}) {
+    const workspaceId = options.workspaceId || DEFAULT_WORKSPACE_ID;
+    const all = await this.getDrafts({ workspaceId });
+    return all.find((d) => d.id === id) || null;
+  },
+
   /**
    * Replace a lead's drafts with a freshly generated set (regenerating is
    * idempotent — old drafts for that lead are removed first). `templates` is the
