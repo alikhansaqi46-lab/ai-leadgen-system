@@ -46,3 +46,28 @@ CREATE TABLE IF NOT EXISTS lead_scores (
 CREATE INDEX IF NOT EXISTS idx_scores_workspace ON lead_scores (workspace_id);
 CREATE INDEX IF NOT EXISTS idx_scores_priority  ON lead_scores (workspace_id, priority);
 CREATE INDEX IF NOT EXISTS idx_scores_ws_score  ON lead_scores (workspace_id, score DESC);
+
+-- =====================================================================
+-- S5.2: AI outreach drafts (cold email / WhatsApp / follow-ups).
+-- Approve-before-send gate: status moves draft -> approved | rejected.
+-- Many drafts per lead (per channel/step), so id is the PK.
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS outreach_drafts (
+  id           TEXT PRIMARY KEY,
+  lead_id      TEXT NOT NULL,
+  workspace_id TEXT NOT NULL DEFAULT 'default',
+  channel      TEXT NOT NULL,                 -- 'email' | 'whatsapp'
+  kind         TEXT NOT NULL,                 -- 'initial' | 'followup'
+  step         INTEGER NOT NULL DEFAULT 0,
+  wait_days    INTEGER NOT NULL DEFAULT 0,
+  subject      TEXT,
+  body         TEXT NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'draft', -- 'draft' | 'approved' | 'rejected'
+  model        TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_drafts_workspace ON outreach_drafts (workspace_id);
+CREATE INDEX IF NOT EXISTS idx_drafts_ws_lead   ON outreach_drafts (workspace_id, lead_id);
+CREATE INDEX IF NOT EXISTS idx_drafts_ws_status ON outreach_drafts (workspace_id, status);

@@ -6,7 +6,9 @@ import {
   qualifyLeads,
   ScoredLead,
   LeadPriority,
+  Lead,
 } from '../../lib/apiClient';
+import OutreachDrawer from './OutreachDrawer';
 
 const PRIORITY_LABEL: Record<LeadPriority, string> = {
   hot: '🔥 Hot',
@@ -27,6 +29,7 @@ export default function AIAgentPage() {
   const [error, setError] = useState<string | null>(null);
   const [model, setModel] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [outreachLead, setOutreachLead] = useState<{ id: string; lead: Lead | null } | null>(null);
 
   async function load() {
     try {
@@ -114,8 +117,9 @@ export default function AIAgentPage() {
       <div className="lf-note">
         AI qualification scores every lead 0–100 on contactability, web presence, reputation,
         niche fit and profile completeness — fully deterministic and explainable. Hot ≥70 ·
-        Warm 40–69 · Cold &lt;40. Message generation and approval arrive in S5.2. Manage raw
-        leads in <Link className="lf-link" to="/app/leads">Leads</Link>.
+        Warm 40–69 · Cold &lt;40. Hit <strong>Draft</strong> on any lead to generate personalized
+        outreach and approve it before sending. Manage raw leads in{' '}
+        <Link className="lf-link" to="/app/leads">Leads</Link>.
       </div>
 
       <div className="lf-kpi-grid">
@@ -152,6 +156,7 @@ export default function AIAgentPage() {
                 <th>Priority</th>
                 <th>Niche</th>
                 <th>Country</th>
+                <th>Outreach</th>
                 <th></th>
               </tr>
             </thead>
@@ -183,6 +188,15 @@ export default function AIAgentPage() {
                     <td>{r.lead.niche || '—'}</td>
                     <td>{r.lead.country || '—'}</td>
                     <td>
+                      <button
+                        className="lf-btn"
+                        style={{ height: 28, padding: '0 10px', fontSize: 13 }}
+                        onClick={() => setOutreachLead({ id: r.leadId, lead: r.lead })}
+                      >
+                        Draft
+                      </button>
+                    </td>
+                    <td>
                       {r.breakdown && (
                         <button
                           className="lf-link"
@@ -196,7 +210,7 @@ export default function AIAgentPage() {
                   </tr>
                   {expanded === r.leadId && r.breakdown && (
                     <tr>
-                      <td colSpan={8} style={{ background: '#f8fafc' }}>
+                      <td colSpan={9} style={{ background: '#f8fafc' }}>
                         {r.breakdown.factors.map((f) => (
                           <div className="lf-factor" key={f.key}>
                             <span><strong>{f.label}</strong> {f.points}/{f.max}</span>
@@ -211,6 +225,14 @@ export default function AIAgentPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {outreachLead && (
+        <OutreachDrawer
+          leadId={outreachLead.id}
+          lead={outreachLead.lead}
+          onClose={() => setOutreachLead(null)}
+        />
       )}
     </div>
   );
