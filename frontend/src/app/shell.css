@@ -147,6 +147,13 @@
 .lf-pill-on { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
 .lf-pill-warn { background: #fffbeb; color: #b45309; border-color: #fde68a; }
 
+.lf-deflist { display: flex; flex-direction: column; }
+.lf-defrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--lf-border); }
+.lf-defrow:last-child { border-bottom: none; }
+.lf-defrow dt { font-size: 13px; font-weight: 600; color: var(--lf-muted); }
+.lf-defrow dd { margin: 0; font-size: 14px; color: var(--lf-text); }
+.lf-defrow-action { display: inline-flex; align-items: center; gap: 12px; }
+
 .lf-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; border: 1px solid var(--lf-border); background: #fff; color: var(--lf-text); }
 .lf-btn-primary { background: var(--lf-primary); color: #fff; border-color: var(--lf-primary); }
 .lf-btn-primary:hover { background: var(--lf-primary-600); }

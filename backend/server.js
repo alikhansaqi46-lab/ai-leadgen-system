@@ -75,6 +75,14 @@ try {
   console.error('❌ Failed to load WhatsApp routes:', err);
 }
 
+// Email outreach routes (S4.3) — status, single + bulk send
+try {
+  app.use('/api/email', requireAuth, require('./routes/email'));
+  console.log('✅ Email routes mounted at /api/email');
+} catch (err) {
+  console.error('❌ Failed to load email routes:', err);
+}
+
 // Improved email extraction function
 async function extractEmailFromPage(url) {
   try {
