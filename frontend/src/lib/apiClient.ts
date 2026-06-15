@@ -46,8 +46,76 @@ export interface LeadQuery {
 }
 
 export interface WhatsAppStatus {
-  configured?: boolean;
-  [key: string]: unknown;
+  configured: boolean;
+  hasToken: boolean;
+  hasPhoneNumberId: boolean;
+  hasWabaId?: boolean;
+  provider?: string;
+  source?: string | null;
+  envFallback?: boolean;
+}
+
+export interface WhatsAppCredentialsInfo {
+  configured: boolean;
+  hasToken: boolean;
+  hasPhoneNumberId: boolean;
+  phoneNumberId: string | null;
+}
+
+export interface WhatsAppCredentialsInput {
+  token: string;
+  phoneNumberId: string;
+  wabaId?: string;
+}
+
+export interface WhatsAppTemplate {
+  name: string;
+  status: string;
+  language: string;
+  category?: string;
+}
+
+export interface WhatsAppTemplatesResponse {
+  success: boolean;
+  templates: WhatsAppTemplate[];
+  demo?: boolean;
+  message?: string;
+}
+
+export interface WhatsAppSendResult {
+  success: boolean;
+  message: string;
+  messageId?: string;
+  status?: string;
+  testMode: boolean;
+  phone: string;
+}
+
+export interface WhatsAppBulkLead {
+  id?: string;
+  phone?: string;
+  name?: string;
+  city?: string;
+  niche?: string;
+}
+
+export interface WhatsAppBulkResultRow {
+  leadId?: string;
+  name?: string;
+  phone?: string;
+  status: 'sent' | 'failed' | 'skipped';
+  messageId?: string;
+  error?: string;
+}
+
+export interface WhatsAppBulkResponse {
+  success: boolean;
+  total: number;
+  sent: number;
+  failed: number;
+  skipped: number;
+  testMode: boolean;
+  results: WhatsAppBulkResultRow[];
 }
 
 const client: AxiosInstance = axios.create({ baseURL: API_BASE });
@@ -80,6 +148,60 @@ export function exportLeadsUrl(query: LeadQuery = {}): string {
 
 export async function getWhatsAppStatus(): Promise<WhatsAppStatus> {
   const { data } = await client.get<WhatsAppStatus>('/api/whatsapp/status');
+  return data;
+}
+
+// ===================== S4.2: WhatsApp =====================
+
+export async function getWhatsAppCredentials(): Promise<WhatsAppCredentialsInfo> {
+  const { data } = await client.get<WhatsAppCredentialsInfo>('/api/whatsapp/credentials');
+  return data;
+}
+
+// Validate credentials without persisting them.
+export async function validateWhatsAppCredentials(
+  input: WhatsAppCredentialsInput,
+): Promise<{ valid: boolean; message?: string; error?: string }> {
+  const { data } = await client.post<{ valid: boolean; message?: string; error?: string }>(
+    '/api/whatsapp/validate',
+    input,
+  );
+  return data;
+}
+
+// Validate + persist credentials for the caller's workspace.
+export async function saveWhatsAppCredentials(
+  input: WhatsAppCredentialsInput,
+): Promise<{ success: boolean }> {
+  const { data } = await client.post<{ success: boolean }>('/api/whatsapp/credentials', input);
+  return data;
+}
+
+export async function deleteWhatsAppCredentials(): Promise<{ success: boolean }> {
+  const { data } = await client.delete<{ success: boolean }>('/api/whatsapp/credentials');
+  return data;
+}
+
+export async function getWhatsAppTemplates(): Promise<WhatsAppTemplatesResponse> {
+  const { data } = await client.get<WhatsAppTemplatesResponse>('/api/whatsapp/templates');
+  return data;
+}
+
+export async function sendWhatsAppMessage(input: {
+  phone: string;
+  message: string;
+  testMode: boolean;
+}): Promise<WhatsAppSendResult> {
+  const { data } = await client.post<WhatsAppSendResult>('/api/whatsapp/send', input);
+  return data;
+}
+
+export async function sendWhatsAppBulk(input: {
+  leads: WhatsAppBulkLead[];
+  message: string;
+  testMode: boolean;
+}): Promise<WhatsAppBulkResponse> {
+  const { data } = await client.post<WhatsAppBulkResponse>('/api/whatsapp/send-bulk', input);
   return data;
 }
 

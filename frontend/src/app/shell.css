@@ -134,6 +134,18 @@
 
 .lf-toolbar { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .lf-input { height: 36px; border: 1px solid var(--lf-border); border-radius: 8px; padding: 0 10px; font-size: 14px; background: #fff; }
+.lf-textarea { width: 100%; min-height: 96px; border: 1px solid var(--lf-border); border-radius: 8px; padding: 10px; font-size: 14px; font-family: inherit; background: #fff; resize: vertical; box-sizing: border-box; }
+.lf-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.lf-field label { font-size: 12px; font-weight: 600; color: var(--lf-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.lf-field .lf-input { width: 100%; box-sizing: border-box; }
+.lf-stack { display: flex; flex-direction: column; gap: 16px; }
+.lf-switch { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.lf-segmented { display: inline-flex; border: 1px solid var(--lf-border); border-radius: 8px; overflow: hidden; }
+.lf-segmented button { height: 34px; padding: 0 14px; border: none; background: #fff; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--lf-muted); }
+.lf-segmented button.is-active { background: var(--lf-primary); color: #fff; }
+.lf-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 10px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+.lf-pill-on { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.lf-pill-warn { background: #fffbeb; color: #b45309; border-color: #fde68a; }
 
 .lf-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; border: 1px solid var(--lf-border); background: #fff; color: var(--lf-text); }
 .lf-btn-primary { background: var(--lf-primary); color: #fff; border-color: var(--lf-primary); }
@@ -145,6 +157,7 @@
 .lf-note { background: #eff6ff; border: 1px solid #dbeafe; color: #1e40af; border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; }
 .lf-alert { border-radius: 10px; padding: 12px 14px; font-size: 14px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; margin-bottom: 14px; }
 .lf-alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+.lf-alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
 
 .lf-empty { background: var(--lf-card); border: 1px dashed var(--lf-border); border-radius: 12px; padding: 40px; text-align: center; }
 .lf-empty-badge { display: inline-block; background: #eef2ff; color: var(--lf-primary-600); font-size: 12px; font-weight: 700; border-radius: 999px; padding: 4px 12px; margin-bottom: 12px; }

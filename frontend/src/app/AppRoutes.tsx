@@ -5,6 +5,7 @@ import LeadsPage from '../features/leads/LeadsPage';
 import WorkspacePage from '../features/workspace/WorkspacePage';
 import AIAgentPage from '../features/ai/AIAgentPage';
 import InboxPage from '../features/inbox/InboxPage';
+import WhatsAppPage from '../features/whatsapp/WhatsAppPage';
 import ComingSoon from '../features/common/ComingSoon';
 
 export default function AppRoutes() {
@@ -19,10 +20,7 @@ export default function AppRoutes() {
           path="scraper"
           element={<ComingSoon title="Scraper" description="Find businesses on Google Maps." phase="UI in S4" useClassic />}
         />
-        <Route
-          path="whatsapp"
-          element={<ComingSoon title="WhatsApp" description="Connect a number and run outreach campaigns." phase="UI in S4" useClassic />}
-        />
+        <Route path="whatsapp" element={<WhatsAppPage />} />
         <Route
           path="email"
           element={<ComingSoon title="Email" description="Send and sequence email outreach." phase="UI in S4" useClassic />}
