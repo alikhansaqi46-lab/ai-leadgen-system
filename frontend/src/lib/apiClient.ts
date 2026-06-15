@@ -83,6 +83,24 @@ export async function getWhatsAppStatus(): Promise<WhatsAppStatus> {
   return data;
 }
 
+// ===================== S4.1: Scraper =====================
+
+export interface ScrapeResponse {
+  leads: Lead[];
+  savedCount: number;
+  totalScraped: number;
+}
+
+// Searches Google Maps (via SerpAPI) and persists the results into the caller's
+// workspace, deduplicated against existing leads. Returns only the newly saved
+// leads. Throws on failure; a 503 with `setupRequired` means SERPAPI_KEY is unset.
+export async function scrapeLeads(keyword: string, location: string): Promise<ScrapeResponse> {
+  const { data } = await client.get<ScrapeResponse>('/api/scrape', {
+    params: { keyword, location },
+  });
+  return data;
+}
+
 // ===================== S5.1: AI Qualification =====================
 
 export type LeadPriority = 'hot' | 'warm' | 'cold';
