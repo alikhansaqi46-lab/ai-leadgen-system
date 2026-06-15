@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AppShell from './AppShell';
 import DashboardPage from '../features/dashboard/DashboardPage';
 import LeadsPage from '../features/leads/LeadsPage';
+import ScraperPage from '../features/scraper/ScraperPage';
 import WorkspacePage from '../features/workspace/WorkspacePage';
 import AIAgentPage from '../features/ai/AIAgentPage';
 import InboxPage from '../features/inbox/InboxPage';
@@ -15,10 +16,7 @@ export default function AppRoutes() {
         <Route index element={<DashboardPage />} />
         <Route path="leads" element={<LeadsPage />} />
         <Route path="workspace" element={<WorkspacePage />} />
-        <Route
-          path="scraper"
-          element={<ComingSoon title="Scraper" description="Find businesses on Google Maps." phase="UI in S4" useClassic />}
-        />
+        <Route path="scraper" element={<ScraperPage />} />
         <Route
           path="whatsapp"
           element={<ComingSoon title="WhatsApp" description="Connect a number and run outreach campaigns." phase="UI in S4" useClassic />}
