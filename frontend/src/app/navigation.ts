@@ -41,6 +41,5 @@ export const NAV_GROUPS: NavGroup[] = [
 ];
 
 export const FOOTER_ITEMS: NavItem[] = [
-  { label: 'Workspace (Classic)', to: '/app/workspace', icon: '▤' },
   { label: 'Settings', to: '/app/settings', icon: '⚙' },
 ];
