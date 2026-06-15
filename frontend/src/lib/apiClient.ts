@@ -205,6 +205,73 @@ export async function sendWhatsAppBulk(input: {
   return data;
 }
 
+// ===================== S4.3: Email =====================
+
+export interface EmailStatus {
+  configured: boolean;
+  provider?: string;
+}
+
+export interface EmailBulkLead {
+  id?: string;
+  email?: string;
+  name?: string;
+  city?: string;
+  niche?: string;
+}
+
+export interface EmailSendResult {
+  success: boolean;
+  message: string;
+  messageId?: string;
+  testMode: boolean;
+  email: string;
+}
+
+export interface EmailBulkResultRow {
+  leadId?: string;
+  name?: string;
+  email?: string;
+  status: 'sent' | 'failed';
+  messageId?: string;
+  error?: string;
+}
+
+export interface EmailBulkResponse {
+  success: boolean;
+  total: number;
+  sent: number;
+  failed: number;
+  skipped: number;
+  testMode: boolean;
+  results: EmailBulkResultRow[];
+}
+
+export async function getEmailStatus(): Promise<EmailStatus> {
+  const { data } = await client.get<EmailStatus>('/api/email/status');
+  return data;
+}
+
+export async function sendEmail(input: {
+  lead: EmailBulkLead;
+  subject: string;
+  message: string;
+  testMode: boolean;
+}): Promise<EmailSendResult> {
+  const { data } = await client.post<EmailSendResult>('/api/email/send', input);
+  return data;
+}
+
+export async function sendEmailBulk(input: {
+  leads: EmailBulkLead[];
+  subject: string;
+  message: string;
+  testMode: boolean;
+}): Promise<EmailBulkResponse> {
+  const { data } = await client.post<EmailBulkResponse>('/api/email/send-bulk', input);
+  return data;
+}
+
 // ===================== S5.1: AI Qualification =====================
 
 export type LeadPriority = 'hot' | 'warm' | 'cold';
