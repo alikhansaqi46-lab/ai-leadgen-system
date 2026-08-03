@@ -14,7 +14,6 @@
  */
 
 const { v4: uuidv4 } = require('uuid');
-const { db } = require('../config/firebase');
 const { query } = require('../config/db');
 const fs = require('fs');
 const path = require('path');
@@ -26,9 +25,8 @@ const VALID_STATUS = ['draft', 'approved', 'rejected'];
 function resolveDriver() {
   const d = (process.env.STORAGE_DRIVER || 'auto').toLowerCase();
   if (d === 'postgres' || d === 'pg') return 'postgres';
-  if (d === 'firestore') return 'firestore';
   if (d === 'json' || d === 'file') return 'json';
-  return db ? 'firestore' : 'json';
+  return process.env.DATABASE_URL ? 'postgres' : 'json';
 }
 
 /* ---------- file helpers ---------- */
@@ -100,22 +98,7 @@ const draftStorage = {
       return result.rows.map((r) => rowFromPg(r, workspaceId));
     }
 
-    let rows;
-    if (driver === 'firestore') {
-      try {
-        const snap = await db
-          .collection('outreach_drafts')
-          .where('workspaceId', '==', workspaceId)
-          .get();
-        rows = snap.docs.map((d) => d.data());
-      } catch (err) {
-        console.error('[DraftStorage] Firestore get failed, falling back to file:', err.message);
-        rows = loadFromFile();
-      }
-    } else {
-      rows = loadFromFile();
-    }
-
+    const rows = loadFromFile();
     return rows.filter(
       (r) =>
         (r.workspaceId || DEFAULT_WORKSPACE_ID) === workspaceId &&
@@ -139,7 +122,7 @@ const draftStorage = {
   async replaceDraftsForLead(leadId, templates, options = {}) {
     const workspaceId = options.workspaceId || DEFAULT_WORKSPACE_ID;
     const now = new Date().toISOString();
-    const rows = templates.map((t) => ({
+    const rows = (templates || []).map((t) => ({
       id: uuidv4(),
       leadId,
       workspaceId,
@@ -171,17 +154,6 @@ const draftStorage = {
       return rows;
     }
 
-    if (driver === 'firestore') {
-      try {
-        const batch = db.batch();
-        for (const r of rows) batch.set(db.collection('outreach_drafts').doc(r.id), r);
-        await batch.commit();
-        return rows;
-      } catch (err) {
-        console.error('[DraftStorage] Firestore insert failed, falling back to file:', err.message);
-      }
-    }
-
     const all = loadFromFile();
     saveToFile([...rows, ...all]);
     return rows;
@@ -206,19 +178,6 @@ const draftStorage = {
       return result.rows.length ? rowFromPg(result.rows[0], workspaceId) : null;
     }
 
-    if (driver === 'firestore') {
-      try {
-        const ref = db.collection('outreach_drafts').doc(id);
-        const doc = await ref.get();
-        if (!doc.exists || (doc.data().workspaceId || DEFAULT_WORKSPACE_ID) !== workspaceId) return null;
-        const updated = { ...doc.data(), status, updatedAt: now };
-        await ref.set(updated);
-        return updated;
-      } catch (err) {
-        console.error('[DraftStorage] Firestore status update failed, falling back to file:', err.message);
-      }
-    }
-
     const all = loadFromFile();
     let updated = null;
     const next = all.map((r) => {
@@ -240,22 +199,6 @@ const draftStorage = {
     if (driver === 'postgres') {
       await query(`DELETE FROM outreach_drafts WHERE workspace_id = $1 AND lead_id = $2`, [workspaceId, leadId]);
       return;
-    }
-
-    if (driver === 'firestore') {
-      try {
-        const snap = await db
-          .collection('outreach_drafts')
-          .where('workspaceId', '==', workspaceId)
-          .where('leadId', '==', leadId)
-          .get();
-        const batch = db.batch();
-        snap.docs.forEach((d) => batch.delete(d.ref));
-        await batch.commit();
-        return;
-      } catch (err) {
-        console.error('[DraftStorage] Firestore delete failed, falling back to file:', err.message);
-      }
     }
 
     const all = loadFromFile();

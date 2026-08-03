@@ -1,177 +1,100 @@
-# AI Lead Generation System
+# LeadFlow AI
 
-Full-stack web application for scraping and managing business leads from Google Maps.
+Autonomous AI Sales Employee by NovaCore Technologies.
+
+Full-stack SaaS for scraping, qualifying, and multi-channel outreach (Email, WhatsApp, SMS) with CRM pipeline, AI replies, and automations.
 
 ## Tech Stack
 
-- **Frontend:** React (Create React App)
+- **Frontend:** React 18 + TypeScript (Create React App), React Router 6
 - **Backend:** Node.js + Express
-- **Database:** Firebase Firestore (optional) with a file-based JSON fallback (`backend/data/`)
+- **Database:** PostgreSQL / Supabase (`STORAGE_DRIVER=postgres`) with JSON file fallback
+- **Auth:** Local JWT (`AUTH_MODE=local`) or Supabase JWT (`AUTH_MODE=supabase`)
 - **Scraping:** SerpAPI (Google Maps engine)
-- **Messaging:** WhatsApp via Meta Cloud API (Twilio path also available); email via Gmail SMTP
+- **Messaging:** WhatsApp Meta Cloud API, Gmail OAuth/API, Twilio SMS
+- **Billing:** PayPal subscriptions
+- **AI:** Heuristic engine or OpenAI (`AI_MODE`)
 
 ## Features
 
-- Scrape business leads from Google Maps (via SerpAPI)
-- Store leads in Firestore (or file-based fallback) with phone/name de-duplication
-- Filter leads by country and niche
-- Export leads to CSV
-- WhatsApp outreach (Meta Cloud API): single, bulk, templates, webhook auto-reply
-- Email outreach via Gmail SMTP
-- Modern, responsive UI
+- Lead scrape → qualify → score (hot/warm/cold)
+- Multi-channel CRM pipeline (`new → sent → replied → interested → meeting → deal/lost`)
+- Unified inbox with AI replies
+- Gmail OAuth send + session inbox sync
+- WhatsApp Meta send/templates/webhooks (signature-verified)
+- SMS via Twilio
+- Follow-up sequences + background worker
+- Automation engine (backend) — see `docs/LEADFLOW_AI_MASTER_PLAN.md`
+- PayPal subscription gates
 
 ## Project Structure
 
 ```
-ai-leadgen-system/
-├── frontend/          # React application
-│   ├── src/
-│   │   ├── App.js    # Main app component
-│   │   ├── index.js  # Entry point
-│   │   └── index.css # Styles
-│   └── public/
-├── backend/           # Node.js API
-│   ├── config/       # Firebase config
-│   ├── routes/       # API routes
-│   ├── server.js     # Entry point
-│   └── package.json
-├── package.json      # Root workspace config
-└── README.md
+AI-LeadGen-system/
+├── frontend/src/     # App shell, features, apiClient
+├── backend/
+│   ├── server.js
+│   ├── routes/
+│   ├── services/
+│   ├── middleware/
+│   ├── utils/        # *Storage layers
+│   ├── config/
+│   └── db/schema.sql
+├── docs/
+│   └── LEADFLOW_AI_MASTER_PLAN.md   # Permanent project brain
+└── package.json
 ```
 
-## Setup Instructions
-
-### 1. Prerequisites
-
-- Node.js 18+
-- A SerpAPI key (https://serpapi.com) for Google Maps scraping
-- (Optional) Firebase project with Firestore enabled — without it, leads persist to `backend/data/leads.json`
-- (Optional) WhatsApp Meta Cloud API credentials for outreach
-
-### 2. Firebase Setup
-
-1. Create a Firebase project at https://console.firebase.google.com
-2. Enable Firestore Database
-3. Generate a service account key:
-   - Project Settings → Service Accounts → Generate new private key
-   - Save as `backend/serviceAccountKey.json`
-
-Or use environment variables:
-```
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_PRIVATE_KEY=your_private_key
-FIREBASE_CLIENT_EMAIL=your_client_email
-```
-
-### 3. Installation
+## Quick Start
 
 ```bash
-# Install all dependencies
 npm run install:all
+# Configure backend/.env from backend/.env.example
+# Set JWT_SECRET, ENCRYPTION_KEY, DATABASE_URL, AUTH_MODE=local, SERPAPI_KEY, …
+cd backend && npm run db:init
+cd .. && npm run dev
 ```
 
-### 4. Environment Variables
+- Frontend: http://localhost:3000  
+- Backend: http://localhost:5001  
+- Health: `GET /health`
 
-Copy the example files and fill in your credentials:
+## Security (production)
 
-```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-```
+Production boot **fails** unless:
 
-Key variables:
+- `AUTH_MODE` is not `disabled` or `dev`
+- `JWT_SECRET` is strong (≥32 chars)
+- `ENCRYPTION_KEY` is 64 hex chars
+- `TLS_INSECURE_ALLOW` is not `true`
+- `ALLOWED_ORIGINS` or `FRONTEND_URL` is set
 
-| Variable | Where | Required | Notes |
-|----------|-------|----------|-------|
-| `SERPAPI_KEY` | backend | Yes (for scraping) | No default — `/api/scrape` returns 503 if unset |
-| `PORT` | backend | No | Defaults to `5001` |
-| `NODE_ENV` | backend | No | In `production`, error responses omit stack traces |
-| `ALLOWED_ORIGINS` | backend | No | Comma-separated CORS allow-list (falls back to `FRONTEND_URL`, then localhost) |
-| `EMAIL_USER` / `EMAIL_PASS` | backend | No | Gmail SMTP; email sending disabled if unset |
-| `WHATSAPP_TOKEN` / `PHONE_NUMBER_ID` | backend | No | Meta Cloud API; can also be set at runtime via the UI |
-| `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | backend | No | Must match the token configured in Meta Developers |
-| `FIREBASE_*` | backend | No | Enables Firestore; otherwise file-based storage is used |
-| `REACT_APP_API_URL` | frontend | No | API base URL; empty = same origin |
+Also set: `WHATSAPP_APP_SECRET`, `PAYPAL_WEBHOOK_ID`, `WEBHOOK_SECRET`, `TWILIO_AUTH_TOKEN` / `TWILIO_WEBHOOK_BASE_URL`, optional `EMAIL_TRACKING_SECRET`.
 
-> Security: do **not** put an OpenAI key in the frontend. AI generation is moving server-side; the browser must never receive the key.
+See `docs/LEADFLOW_AI_MASTER_PLAN.md` §11 and §19.
 
-### 4b. Storage drivers (PostgreSQL / Supabase)
+## Documentation
 
-Lead storage is pluggable via `STORAGE_DRIVER` (all behind the same `leadStorage.js` interface):
+| Doc | Purpose |
+|-----|---------|
+| `docs/LEADFLOW_AI_MASTER_PLAN.md` | Vision, architecture, roadmap |
+| `docs/S1_MIGRATION.md` | Postgres cutover |
+| `docs/S2_AUTH.md` | Auth + workspace isolation |
+| `docs/SUPABASE_GOLIVE.md` | Live Supabase |
+| `docs/SMOKE_TEST.md` | Smoke checklist |
 
-| `STORAGE_DRIVER` | Behavior |
-|------------------|----------|
-| `auto` (default) | Firestore if configured, else JSON file (legacy behavior) |
-| `json` | File-based JSON (`backend/data/leads.json`) |
-| `firestore` | Firestore |
-| `postgres` | PostgreSQL / Supabase (requires `DATABASE_URL`) |
+## Scripts
 
-To migrate to Postgres:
-
-```bash
-cd backend
-npm run db:init                      # create schema (idempotent)
-npm run db:migrate-json -- --dry-run # preview import (no writes)
-npm run db:migrate-json              # import data/leads.json (idempotent, copy-only)
-# then set STORAGE_DRIVER=postgres and restart
-```
-
-Rollback is just flipping `STORAGE_DRIVER` back — the source data is never modified. Full runbook: [`docs/S1_MIGRATION.md`](docs/S1_MIGRATION.md).
-
-### 4c. Auth & workspace isolation (S2)
-
-Authentication and per-workspace data isolation are pluggable via `AUTH_MODE`:
-
-| `AUTH_MODE` | Behavior |
-|-------------|----------|
-| `disabled` (default) | No token required; everything uses `DEFAULT_WORKSPACE_ID`. Identical to pre-S2 behavior. |
-| `supabase` | Verify Supabase JWTs; data scoped per workspace. |
-| `dev` | Verify locally signed JWTs (`DEV_AUTH_SECRET`) — for tests only. |
-
-When enabled, every lead is scoped by `workspace_id` across all storage drivers,
-and the frontend (`REACT_APP_AUTH_MODE=supabase`) shows a Supabase login. The
-WhatsApp webhook stays unauthenticated. Run the isolation tests with
-`npm run test:isolation` (add `DATABASE_URL` to also cover Postgres). Full
-runbook: [`docs/S2_AUTH.md`](docs/S2_AUTH.md).
-
-### 5. Running the App
-
-```bash
-# Start both frontend and backend
-npm run dev
-
-# Or run separately:
-npm run dev:backend   # Backend on http://localhost:5001
-npm run dev:frontend  # Frontend on http://localhost:3000
-```
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Health check |
-| GET | `/api/scrape?keyword=&location=` | Scrape Google Maps via SerpAPI |
-| GET | `/api/leads` | Get all leads (with filters) |
-| GET | `/api/leads/filters` | Get unique countries/niches |
-| GET | `/api/leads/export` | Export leads to CSV |
-| DELETE | `/api/leads/:id` | Delete a lead |
-| POST | `/api/leads/bulk` | Bulk add leads |
-| POST | `/api/leads/bulk-delete` | Bulk delete leads |
-| POST | `/api/whatsapp/credentials` | Save WhatsApp Meta credentials |
-| GET | `/api/whatsapp/status` | WhatsApp configuration status |
-| POST | `/api/whatsapp/send-bulk` | Bulk WhatsApp send |
-| GET/POST | `/api/whatsapp/webhook` | Meta webhook (verify / receive) |
-| POST | `/api/send-email` | Send an email to a lead |
-
-## Usage
-
-1. Open the app at http://localhost:3000
-2. Enter a business type/keyword (e.g., "restaurants")
-3. Optionally add location, country, and niche
-4. Click "Start Scraping" to collect leads
-5. Use filters to narrow down results
-6. Export leads to CSV when ready
+| Command | Description |
+|---------|-------------|
+| `npm run install:all` | Install frontend + backend |
+| `npm run dev` | Concurrent backend + frontend |
+| `npm run build` | Frontend production build |
+| `npm start` | Backend only |
+| `cd backend && npm run test:security` | Security regression checks |
+| `cd backend && npm run test:stabilize` | Stabilization smoke checks |
+| `cd backend && npm run test:isolation` | Workspace isolation tests |
 
 ## License
 
-MIT
+Private — NovaCore Technologies.

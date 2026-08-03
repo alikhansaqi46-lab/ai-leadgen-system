@@ -106,9 +106,38 @@ router.post('/bulk', async (req, res) => {
 
     const workspaceId = (req.auth && req.auth.workspaceId) || undefined;
     const saved = await storage.addLeads(leads, { workspaceId });
+    // Automation trigger: lead_created (non-blocking)
+    try {
+      const { dispatchEvent } = require('../services/automationEngine');
+      const ws = workspaceId || process.env.DEFAULT_WORKSPACE_ID || 'default';
+      for (const lead of saved.slice(0, 50)) {
+        dispatchEvent('lead_created', {
+          leadId: lead.id,
+          workspaceId: ws,
+          niche: lead.niche || lead.category || null,
+          country: lead.country || null,
+        }, { workspaceId: ws }).catch(() => {});
+      }
+    } catch (_) { /* non-fatal */ }
     res.json({ message: 'Leads saved successfully', count: saved.length, leads: saved });
   } catch (error) {
     console.error('Bulk save error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update a lead (notes, name, etc.)
+router.put('/:id', async (req, res) => {
+  try {
+    const workspaceId = (req.auth && req.auth.workspaceId) || undefined;
+    const updates = req.body;
+    const updated = await storage.updateLead(req.params.id, updates, { workspaceId });
+    if (!updated) {
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+    res.json({ success: true, lead: updated });
+  } catch (error) {
+    console.error('Update lead error:', error);
     res.status(500).json({ error: error.message });
   }
 });

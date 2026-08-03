@@ -2,13 +2,11 @@
  * Lead Storage Module
  * Pluggable persistence selected by STORAGE_DRIVER:
  *   - 'postgres'  → PostgreSQL / Supabase (via config/db.js)
- *   - 'firestore' → Firestore
  *   - 'json'      → file-based JSON (backend/data/leads.json)
- *   - 'auto' (default) → Firestore if configured, else JSON file (legacy behavior)
+ *   - 'auto' (default) → PostgreSQL if DATABASE_URL is set, else JSON file
  * Provides unified CRUD regardless of which backend is active.
  */
 
-const { db } = require('../config/firebase');
 const { query } = require('../config/db');
 const fs = require('fs');
 const path = require('path');
@@ -17,15 +15,24 @@ const { v4: uuidv4 } = require('uuid');
 const DATA_FILE = path.join(__dirname, '..', 'data', 'leads.json');
 const DEFAULT_WORKSPACE_ID = process.env.DEFAULT_WORKSPACE_ID || 'default';
 
+async function syncUniversalContacts(leads, workspaceId) {
+  try {
+    const contactStorage = require('./contactStorage');
+    for (const lead of leads.filter(Boolean)) {
+      await contactStorage.ensureLeadContacts(lead, { workspaceId });
+    }
+  } catch (err) {
+    console.error('[LeadStorage] Contact sync failed (non-fatal):', err.message);
+  }
+}
+
 /* ==================== DRIVER SELECTION ==================== */
 
 function resolveDriver() {
   const d = (process.env.STORAGE_DRIVER || 'auto').toLowerCase();
   if (d === 'postgres' || d === 'pg') return 'postgres';
-  if (d === 'firestore') return 'firestore';
   if (d === 'json' || d === 'file') return 'json';
-  // 'auto' (default): preserve legacy behavior exactly.
-  return db ? 'firestore' : 'json';
+  return process.env.DATABASE_URL ? 'postgres' : 'json';
 }
 
 /* ==================== FILE HELPERS ==================== */
@@ -89,46 +96,6 @@ function deduplicateLeads(existingLeads, newLeads) {
   return unique;
 }
 
-/* ==================== FIRESTORE HELPERS ==================== */
-
-async function getLeadsFromFirestore({ workspaceId, country, niche, limit = 100 } = {}) {
-  let q = db.collection('leads').orderBy('createdAt', 'desc');
-  if (workspaceId) q = q.where('workspaceId', '==', workspaceId);
-  if (country) q = q.where('country', '==', country);
-  if (niche) q = q.where('niche', '==', niche);
-  q = q.limit(parseInt(limit));
-  const snapshot = await q.get();
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-}
-
-async function saveLeadsToFirestore(leads) {
-  const batch = db.batch();
-  const saved = [];
-  for (const lead of leads) {
-    const docRef = db.collection('leads').doc();
-    const data = { ...lead, id: docRef.id, createdAt: new Date().toISOString(), source: lead.source || 'scraped', workspaceId: lead.workspaceId || DEFAULT_WORKSPACE_ID };
-    batch.set(docRef, data);
-    saved.push(data);
-  }
-  await batch.commit();
-  return saved;
-}
-
-async function deleteLeadsFromFirestore(ids, workspaceId) {
-  const batch = db.batch();
-  let count = 0;
-  for (const id of ids) {
-    const ref = db.collection('leads').doc(id);
-    const snap = await ref.get();
-    // Scope delete to the caller's workspace so A cannot delete B's lead.
-    if (snap.exists && (!workspaceId || snap.data().workspaceId === workspaceId)) {
-      batch.delete(ref);
-      count++;
-    }
-  }
-  if (count > 0) await batch.commit();
-}
-
 /* ==================== POSTGRES HELPERS ==================== */
 
 async function getLeadsFromPostgres({ workspaceId, country, niche, limit = 100 } = {}) {
@@ -182,6 +149,22 @@ async function deleteLeadsFromPostgres(ids, workspaceId) {
 
 const storage = {
   /**
+   * Find a lead by phone number (normalized, workspace-scoped).
+   */
+  async findByPhone(phone, options = {}) {
+    const workspaceId = options.workspaceId || DEFAULT_WORKSPACE_ID;
+    const normalized = (phone || '').replace(/\D/g, '').trim();
+    if (!normalized || normalized.length < 7) return null;
+    const leads = await this.getLeads({ workspaceId, limit: 10000 });
+    return leads.find((l) => {
+      const p = (l.phone || l.whatsapp || '').replace(/\D/g, '').trim();
+      // Empty phone must NEVER match — ''.endsWith(x) is false but x.endsWith('') is true.
+      if (!p || p.length < 7) return false;
+      return p === normalized || p.endsWith(normalized) || normalized.endsWith(p);
+    }) || null;
+  },
+
+  /**
    * Get all leads (newest first)
    */
   async getLeads(options = {}) {
@@ -191,16 +174,7 @@ const storage = {
 
     if (driver === 'postgres') {
       return await getLeadsFromPostgres(opts);
-    }
-
-    if (driver === 'firestore') {
-      try {
-        return await getLeadsFromFirestore(opts);
-      } catch (err) {
-        console.error('[LeadStorage] Firestore get failed, falling back to file:', err.message);
-      }
-    }
-    // File driver: scope by workspace (legacy rows without workspaceId belong to default).
+    }// File driver: scope by workspace (legacy rows without workspaceId belong to default).
     return loadLeadsFromFile().filter(
       lead => (lead.workspaceId || DEFAULT_WORKSPACE_ID) === workspaceId
     );
@@ -232,27 +206,9 @@ const storage = {
       }
       const saved = await saveLeadsToPostgres(unique);
       console.log(`[LeadStorage] Saved ${saved.length} leads to Postgres`);
+      await syncUniversalContacts(saved, workspaceId);
       return saved;
-    }
-
-    if (driver === 'firestore') {
-      try {
-        // Read existing (this workspace only) for dedup
-        const existing = await getLeadsFromFirestore({ workspaceId, limit: 10000 });
-        const unique = deduplicateLeads(existing, enriched);
-        if (unique.length === 0) {
-          console.log('[LeadStorage] All leads are duplicates, nothing added');
-          return [];
-        }
-        const saved = await saveLeadsToFirestore(unique);
-        console.log(`[LeadStorage] Saved ${saved.length} leads to Firestore`);
-        return saved;
-      } catch (err) {
-        console.error('[LeadStorage] Firestore save failed, falling back to file:', err.message);
-      }
-    }
-
-    // File-based fallback. Dedup within the workspace, but persist ALL rows
+    }// File-based fallback. Dedup within the workspace, but persist ALL rows
     // (other workspaces' leads must remain intact in the shared file).
     const existingAll = loadLeadsFromFile();
     const existingWs = existingAll.filter(
@@ -266,6 +222,7 @@ const storage = {
     const merged = [...unique, ...existingAll];
     saveLeadsToFile(merged);
     console.log(`[LeadStorage] Saved ${unique.length} leads to file (total: ${merged.length})`);
+    await syncUniversalContacts(unique, workspaceId);
     return unique;
   },
 
@@ -280,19 +237,7 @@ const storage = {
       await deleteLeadsFromPostgres(ids, workspaceId);
       console.log(`[LeadStorage] Deleted leads from Postgres (workspace ${workspaceId})`);
       return;
-    }
-
-    if (driver === 'firestore') {
-      try {
-        await deleteLeadsFromFirestore(ids, workspaceId);
-        console.log(`[LeadStorage] Deleted leads from Firestore (workspace ${workspaceId})`);
-        return;
-      } catch (err) {
-        console.error('[LeadStorage] Firestore delete failed, falling back to file:', err.message);
-      }
-    }
-
-    // File driver: only remove rows that match BOTH id and workspace (isolation).
+    }// File driver: only remove rows that match BOTH id and workspace (isolation).
     const existing = loadLeadsFromFile();
     const filtered = existing.filter(
       lead => !(ids.includes(lead.id) && (lead.workspaceId || DEFAULT_WORKSPACE_ID) === workspaceId)
@@ -326,6 +271,42 @@ const storage = {
     if (country) leads = leads.filter(l => l.country === country);
     if (niche) leads = leads.filter(l => l.niche === niche);
     return leads;
+  },
+
+  /**
+   * Update a lead's properties (e.g. notes). Merges new data into existing lead.
+   */
+  async updateLead(leadId, updates, options = {}) {
+    const workspaceId = options.workspaceId || DEFAULT_WORKSPACE_ID;
+    const driver = resolveDriver();
+
+    if (driver === 'postgres') {
+      // Fetch existing lead data
+      const existing = await this.getLeads({ workspaceId, limit: 10000 });
+      const lead = existing.find(l => l.id === leadId);
+      if (!lead) return null;
+
+      const merged = { ...lead, ...updates, updatedAt: new Date().toISOString() };
+      // Update typed columns that may have changed + notes
+      await query(
+        `UPDATE leads SET name = $2, phone = $3, country = $4, niche = $5, notes = $6, data = $7 WHERE id = $1 AND workspace_id = $8`,
+        [leadId, merged.name || null, merged.phone || null, merged.country || null, merged.niche || null, merged.notes || null, JSON.stringify(merged), workspaceId]
+      );
+      await syncUniversalContacts([merged], workspaceId);
+      return merged;
+    }// File-based fallback
+    const all = loadLeadsFromFile();
+    let updated = null;
+    const updatedAll = all.map(lead => {
+      if (lead.id === leadId && (lead.workspaceId || DEFAULT_WORKSPACE_ID) === workspaceId) {
+        updated = { ...lead, ...updates, updatedAt: new Date().toISOString() };
+        return updated;
+      }
+      return lead;
+    });
+    saveLeadsToFile(updatedAll);
+    if (updated) await syncUniversalContacts([updated], workspaceId);
+    return updated;
   }
 };
 

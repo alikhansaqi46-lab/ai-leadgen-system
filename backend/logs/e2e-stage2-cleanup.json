@@ -1,0 +1,19 @@
+{
+  "deletedDocs": [
+    {
+      "id": "qt_6442c7ba-b25e-4d65-bfae-71b13f34d7ef",
+      "ok": true
+    },
+    {
+      "id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "ok": true
+    }
+  ],
+  "deletedLead": true,
+  "deletedContacts": 1,
+  "deletedOse": 4,
+  "remaining": {
+    "docs": 0,
+    "leads": 0
+  }
+}

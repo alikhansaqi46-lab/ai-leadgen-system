@@ -1,139 +1,134 @@
 /**
- * WhatsApp Meta Cloud API Routes
- * Production-ready endpoints for WhatsApp Business messaging
+ * WhatsApp Routes — Official Meta WhatsApp Cloud API only.
+ * No QR, no WhatsApp Web, no Baileys.
  */
 
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
+const whatsappTransport = require('../services/whatsappTransport');
+const whatsappMeta = require('../services/whatsappMeta');
 const {
-  sendTextMessage,
-  sendTemplateMessage,
   getBusinessInfo,
   getMessageTemplates,
   validateCredentials,
-  formatPhoneNumber
-} = require('../services/whatsappMeta');
+  formatPhoneNumber: metaFormatPhone,
+} = whatsappMeta;
+const timelineStorage = require('../utils/timelineStorage');
+const aiProvider = require('../services/aiProvider');
+const openAiKeyService = require('../services/openAiKeyService');
 
-/**
- * Resolve the credential key (workspace) for a request.
- * Prefers the authenticated workspace (req.auth.workspaceId, set by auth middleware),
- * falls back to the legacy x-user-id header, then 'default'.
- * The webhook is unauthenticated and has neither, so it resolves to 'default'.
- */
-function workspaceOf(req) {
-  return (req.auth && req.auth.workspaceId) || req.headers['x-user-id'] || 'default';
+const conversationStorage = require('../utils/conversationStorage');
+const campaignStorage = require('../utils/campaignStorage');
+const leadStorage = require('../utils/leadStorage');
+const unifiedSend = require('../services/unifiedSend');
+const integrationStorage = require('../utils/integrationStorage');
+const contactStorage = require('../utils/contactStorage');
+const personalContactStorage = require('../utils/personalContactStorage');
+
+const { workspaceOf } = require('../utils/workspaceContext');
+
+function isPersonalContactRecipient(lead) {
+  return lead?.source === 'contacts' || !!lead?.contactId || String(lead?.id || '').startsWith('contact:');
 }
 
-// ==================== PERSISTENT USER CREDENTIALS STORAGE ====================
-const CREDENTIALS_FILE = path.join(__dirname, '..', 'data', 'whatsapp_credentials.json');
-const CREDENTIALS_TMP = path.join(__dirname, '..', 'data', 'whatsapp_credentials.json.tmp');
+function contactConversationId(contactId) {
+  return `contact:${String(contactId || '').replace(/^contact:/, '')}`;
+}
 
-function ensureDataDir() {
-  const dataDir = path.dirname(CREDENTIALS_FILE);
-  if (!fs.existsSync(dataDir)) {
-    try {
-      fs.mkdirSync(dataDir, { recursive: true });
-      console.log('[WhatsApp] Created data directory:', dataDir);
-    } catch (err) {
-      console.error('[WhatsApp] Failed to create data directory:', err.message);
-    }
+async function recordWhatsAppContactSend({ workspaceId, contact, body, sendResult }) {
+  const leadId = contactConversationId(contact.id);
+  let conv = await conversationStorage.findConversation({ workspaceId, leadId, channel: 'whatsapp' });
+  if (!conv) {
+    conv = await conversationStorage.createConversation({
+      leadId,
+      channel: 'whatsapp',
+      status: 'open',
+      subject: `WhatsApp with ${contact.name || contact.whatsappNumber || 'Contact'}`,
+    }, { workspaceId });
   }
+  await conversationStorage.addMessage(conv.id, {
+    direction: 'outbound',
+    body,
+    channel: 'whatsapp',
+    source: 'contact_campaign',
+    status: sendResult?.status || 'sent',
+    externalMessageId: sendResult?.messageId || null,
+    messageType: 'text',
+    metadata: {
+      entityType: 'contact',
+      contactId: contact.id,
+      messageId: sendResult?.messageId || null,
+    },
+  }, { workspaceId });
+  return { conversationId: conv.id, messageId: sendResult?.messageId || null };
 }
 
-ensureDataDir();
-
-// In-memory credential cache
-let userCredentials = new Map();
-let lastLoadTime = 0;
+function formatPhoneNumber(phone) {
+  return metaFormatPhone(phone);
+}
 
 /**
- * Reload credentials from file into memory.
- * Called at startup, periodically, and on-demand when a lookup misses.
+ * Resolve workspace from Meta webhook metadata.phone_number_id by matching
+ * stored WhatsApp integration credentials. Falls back to null if unknown.
  */
-function reloadCredentialsFromFile() {
+function resolveWorkspaceFromWebhookBody(body) {
   try {
-    if (!fs.existsSync(CREDENTIALS_FILE)) {
-      return;
+    const phoneNumberId = body?.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id;
+    if (!phoneNumberId) return null;
+    const workspaces = integrationStorage.listAllWorkspaces() || [];
+    for (const ws of workspaces) {
+      const creds = integrationStorage.getCredentials(ws, 'whatsapp');
+      if (creds?.phoneNumberId && String(creds.phoneNumberId) === String(phoneNumberId)) {
+        return ws;
+      }
     }
-    const raw = fs.readFileSync(CREDENTIALS_FILE, 'utf8');
-    if (!raw.trim()) return;
-    const parsed = JSON.parse(raw);
-    const previousSize = userCredentials.size;
-    Object.entries(parsed).forEach(([key, val]) => userCredentials.set(key, val));
-    lastLoadTime = Date.now();
-    if (userCredentials.size !== previousSize || previousSize === 0) {
-      console.log('[WhatsApp] Reloaded', userCredentials.size, 'credential set(s) from file');
+    if (process.env.PHONE_NUMBER_ID && String(process.env.PHONE_NUMBER_ID) === String(phoneNumberId)) {
+      return process.env.DEFAULT_WORKSPACE_ID || 'default';
     }
   } catch (err) {
-    console.error('[WhatsApp] Failed to reload credentials file:', err.message);
+    console.error('[WhatsApp Webhook] workspace resolve error:', err.message);
   }
+  return null;
 }
 
-// Initial load at startup
-reloadCredentialsFromFile();
-
-/**
- * Atomic file write: write to temp, then rename.
- * Prevents corruption if process crashes during write.
- */
-function saveCredentialsFile() {
-  ensureDataDir();
-  try {
-    const obj = {};
-    userCredentials.forEach((val, key) => { obj[key] = val; });
-    const json = JSON.stringify(obj, null, 2);
-    fs.writeFileSync(CREDENTIALS_TMP, json, { encoding: 'utf8' });
-    fs.renameSync(CREDENTIALS_TMP, CREDENTIALS_FILE);
-    console.log('[WhatsApp] Credentials saved to file (atomic write)');
-  } catch (err) {
-    console.error('[WhatsApp] Failed to save credentials file:', err.message);
-  }
-}
-
-/**
- * Get credentials for a user.
- * 1. Try in-memory cache
- * 2. If miss, reload from file (handles server restarts)
- * 3. If still miss, fall back to environment variables
- */
+/** Compatibility helper used by ai.js / campaign callers */
 function getUserCredentials(userId = 'default') {
-  if (userCredentials.has(userId)) {
-    return userCredentials.get(userId);
-  }
-
-  // Miss in memory — try reloading from file (server may have restarted)
-  reloadCredentialsFromFile();
-
-  if (userCredentials.has(userId)) {
-    return userCredentials.get(userId);
-  }
-
-  // Final fallback: environment variables (production-stable)
+  const creds = whatsappTransport.resolveCredentials(userId);
   return {
-    token: process.env.WHATSAPP_TOKEN || null,
-    phoneNumberId: process.env.PHONE_NUMBER_ID || null,
-    wabaId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || null
+    token: creds.token || null,
+    phoneNumberId: creds.phoneNumberId || null,
+    wabaId: creds.wabaId || null,
+    transport: 'meta',
+    _source: creds.source,
   };
 }
 
-function setUserCredentials(userId, credentials) {
-  userCredentials.set(userId, {
-    ...credentials,
-    updatedAt: new Date().toISOString()
-  });
-  saveCredentialsFile();
+function isWhatsAppReady(workspaceId) {
+  return whatsappTransport.isConfigured(workspaceId);
 }
 
-// Auto-reload credentials every 10 seconds to survive Render restarts / filesystem sync issues
-setInterval(() => {
-  reloadCredentialsFromFile();
-}, 10000);
+async function providerSendText(workspaceId, to, message, testMode = false) {
+  return whatsappTransport.sendText({ workspaceId, to, message, testMode });
+}
 
-// ==================== CREDENTIALS MANAGEMENT ====================
+// ==================== CREDENTIALS ====================
 
-// POST /api/whatsapp/credentials - Save user credentials
+function setUserCredentials(userId, credentials) {
+  integrationStorage.set(userId, 'whatsapp', {
+    type: 'api_key',
+    connected: true,
+    account: credentials.phoneNumberId || 'connected',
+    credentials: {
+      transport: 'meta',
+      token: credentials.token,
+      phoneNumberId: credentials.phoneNumberId,
+      wabaId: credentials.wabaId || null,
+    },
+    connectedAt: new Date().toISOString(),
+  });
+}
+
+// POST /api/whatsapp/credentials - Save Meta Cloud API credentials
 router.post('/credentials', async (req, res) => {
   try {
     const { token, phoneNumberId, wabaId } = req.body;
@@ -142,83 +137,75 @@ router.post('/credentials', async (req, res) => {
     if (!token || !phoneNumberId) {
       return res.status(400).json({
         error: 'Missing required fields',
-        message: 'Both token and phoneNumberId are required'
+        message: 'Both token and phoneNumberId are required',
       });
     }
 
-    // Validate credentials before saving
     const validation = await validateCredentials(token, phoneNumberId);
     if (!validation.valid) {
       return res.status(400).json({
         error: 'Invalid credentials',
-        message: validation.error
+        message: validation.error,
       });
     }
 
-    // Save credentials (in production, encrypt these!)
     setUserCredentials(userId, { token, phoneNumberId, wabaId: wabaId || null });
 
     res.json({
       success: true,
       message: 'WhatsApp credentials saved successfully',
-      phoneNumberId: phoneNumberId.substring(0, 6) + '****' // Partially masked
+      phoneNumberId: phoneNumberId.substring(0, 6) + '****',
     });
   } catch (error) {
     console.error('❌ Save credentials error:', error.message);
     res.status(500).json({
       error: 'Failed to save credentials',
-      message: error.message
+      message: error.message,
     });
   }
 });
 
-// GET /api/whatsapp/credentials - Check if credentials exist (safe - no token exposure)
-router.get('/credentials', (req, res) => {
+// GET /api/whatsapp/credentials
+router.get('/credentials', async (req, res) => {
   const userId = workspaceOf(req);
   const creds = getUserCredentials(userId);
-
   const hasCredentials = !!(creds.token && creds.phoneNumberId);
-
   res.json({
     configured: hasCredentials,
+    transport: 'meta',
     hasToken: !!creds.token,
     hasPhoneNumberId: !!creds.phoneNumberId,
-    phoneNumberId: creds.phoneNumberId ? creds.phoneNumberId.substring(0, 6) + '****' : null
+    hasWabaId: !!creds.wabaId,
+    phoneNumberId: creds.phoneNumberId ? creds.phoneNumberId.substring(0, 6) + '****' : null,
+    wabaId: creds.wabaId ? creds.wabaId.substring(0, 6) + '****' : null,
+    credentialSource: creds._source,
   });
 });
 
-// DELETE /api/whatsapp/credentials - Remove stored credentials
-router.delete('/credentials', (req, res) => {
+// DELETE /api/whatsapp/credentials
+router.delete('/credentials', async (req, res) => {
   const userId = workspaceOf(req);
-  userCredentials.delete(userId);
-  saveCredentialsFile();
-  res.json({ success: true, message: 'Credentials removed' });
+  integrationStorage.remove(userId, 'whatsapp');
+  res.json({ success: true, message: 'WhatsApp credentials removed' });
 });
 
-// POST /api/whatsapp/validate - Validate token without saving
+// POST /api/whatsapp/validate
 router.post('/validate', async (req, res) => {
   try {
     const { token, phoneNumberId } = req.body;
-
     if (!token || !phoneNumberId) {
       return res.status(400).json({
         error: 'Missing required fields',
-        message: 'Both token and phoneNumberId are required'
+        message: 'Both token and phoneNumberId are required',
       });
     }
-
-    console.log('[WhatsApp] Validating credentials for phoneNumberId:', phoneNumberId.substring(0, 6) + '****');
     const validation = await validateCredentials(token, phoneNumberId);
-
     if (validation.valid) {
-      console.log('[WhatsApp] Validation SUCCESS');
       res.json({ valid: true, message: 'Credentials are valid' });
     } else {
-      console.log('[WhatsApp] Validation FAILED:', validation.error);
       res.status(400).json({ valid: false, error: validation.error });
     }
   } catch (error) {
-    console.error('[WhatsApp] Validation error:', error.message);
     res.status(500).json({ valid: false, error: error.message });
   }
 });
@@ -235,17 +222,15 @@ router.post('/send', async (req, res) => {
       templateName = null,
       templateParams = [],
       languageCode = 'en_US',
-      testMode = false
+      testMode = false,
     } = req.body;
 
     const userId = workspaceOf(req);
-    const credentials = getUserCredentials(userId);
-
-    if (!testMode && (!credentials.token || !credentials.phoneNumberId)) {
+    if (!testMode && !isWhatsAppReady(userId)) {
       return res.status(503).json({
         error: 'WhatsApp not configured',
-        message: 'Please configure WhatsApp credentials first',
-        setupRequired: true
+        message: 'Configure Meta Cloud API credentials in WhatsApp Settings first',
+        setupRequired: true,
       });
     }
 
@@ -254,31 +239,39 @@ router.post('/send', async (req, res) => {
     }
 
     const formattedPhone = formatPhoneNumber(phone);
-    let result;
+    const credentials = getUserCredentials(userId);
 
-    if (useTemplate && templateName) {
-      // Send template message
-      result = await sendTemplateMessage({
-        token: credentials.token,
-        phoneNumberId: credentials.phoneNumberId,
-        to: formattedPhone,
-        templateName,
-        languageCode,
-        templateParams,
-        testMode
+    const lead = await contactStorage.findLeadByContact({ workspaceId: userId, channel: 'whatsapp', value: formattedPhone })
+      || await leadStorage.findByPhone(formattedPhone, { workspaceId: userId });
+
+    const providerSend = async () => {
+      if (useTemplate && templateName && (credentials.token || testMode)) {
+        return whatsappTransport.sendTemplate({
+          workspaceId: userId,
+          to: formattedPhone,
+          templateName,
+          languageCode,
+          templateParams,
+          testMode,
+        });
+      }
+      if (!message) throw new Error('Message is required for text messages');
+      return providerSendText(userId, formattedPhone, message, testMode);
+    };
+
+    let result;
+    if (lead) {
+      result = await unifiedSend.send({
+        leadId: lead.id,
+        channel: 'whatsapp',
+        body: message || '[template]',
+        providerSend,
+        metadata: { templateName, languageCode, testMode },
+        scheduleFollowUps: !testMode,
+        workspaceId: userId,
       });
     } else {
-      // Send text message
-      if (!message) {
-        return res.status(400).json({ error: 'Message is required for text messages' });
-      }
-      result = await sendTextMessage({
-        token: credentials.token,
-        phoneNumberId: credentials.phoneNumberId,
-        to: formattedPhone,
-        message,
-        testMode
-      });
+      result = await providerSend();
     }
 
     res.json({
@@ -287,9 +280,10 @@ router.post('/send', async (req, res) => {
         ? '🧪 TEST: Message would be sent'
         : `WhatsApp message sent to ${formattedPhone}`,
       messageId: result.messageId,
-      status: result.status,
+      status: result.status || 'sent',
       testMode: result.testMode || false,
-      phone: formattedPhone
+      phone: formattedPhone,
+      conversationId: result.conversationId || null,
     });
 
   } catch (error) {
@@ -312,7 +306,60 @@ router.post('/send', async (req, res) => {
 });
 
 // Track sent phones within same session to prevent duplicate sends
+// Entries are auto-evicted after 1 hour to prevent memory leaks
 const sessionSentPhones = new Set();
+const SESSION_PHONE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const sessionPhoneTimestamps = new Map(); // phoneSessionKey -> timestamp
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, ts] of sessionPhoneTimestamps) {
+    if (now - ts > SESSION_PHONE_TTL_MS) {
+      sessionPhoneTimestamps.delete(key);
+      sessionSentPhones.delete(key);
+    }
+  }
+}, 5 * 60 * 1000).unref?.(); // Cleanup every 5 minutes
+
+/** In-memory WhatsApp campaign job controls (pause / resume / cancel) per workspace. */
+// Entries are cleaned up after campaign completion (status=completed|idle|cancelled) + 30min TTL
+const waCampaignJobs = new Map();
+const CAMPAIGN_JOB_TTL_MS = 30 * 60 * 1000; // 30 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [wsId, job] of waCampaignJobs) {
+    if (['completed', 'cancelled', 'idle'].includes(job.status)) {
+      const updated = new Date(job.updatedAt || 0).getTime();
+      if (now - updated > CAMPAIGN_JOB_TTL_MS) {
+        waCampaignJobs.delete(wsId);
+      }
+    }
+  }
+}, 5 * 60 * 1000).unref?.(); // Cleanup every 5 minutes
+
+function getCampaignJob(workspaceId) {
+  if (!waCampaignJobs.has(workspaceId)) {
+    waCampaignJobs.set(workspaceId, {
+      status: 'idle', // idle | running | paused | cancelled | completed | scheduled
+      scheduledAt: null,
+      updatedAt: new Date().toISOString(),
+      total: 0,
+      sent: 0,
+      failed: 0,
+      payload: null,
+    });
+  }
+  return waCampaignJobs.get(workspaceId);
+}
+
+async function waitWhilePaused(workspaceId) {
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const job = getCampaignJob(workspaceId);
+    if (job.status === 'cancelled') return 'cancelled';
+    if (job.status !== 'paused') return job.status;
+    await new Promise((r) => setTimeout(r, 800));
+  }
+}
 
 // POST /api/whatsapp/send-bulk - Send to multiple leads
 router.post('/send-bulk', async (req, res) => {
@@ -332,12 +379,12 @@ router.post('/send-bulk', async (req, res) => {
     const userId = workspaceOf(req);
     const credentials = getUserCredentials(userId);
 
-    if (!testMode && (!credentials.token || !credentials.phoneNumberId)) {
-      console.log('[WhatsApp] Bulk send blocked: credentials not configured');
+    if (!testMode && !isWhatsAppReady(userId)) {
+      console.log('[WhatsApp] Bulk send blocked: WhatsApp not configured');
       return res.status(503).json({
         error: 'WhatsApp not configured',
-        message: 'Please configure WhatsApp credentials first',
-        setupRequired: true
+        message: 'Configure Meta Cloud API credentials in WhatsApp Settings first',
+        setupRequired: true,
       });
     }
 
@@ -354,13 +401,36 @@ router.post('/send-bulk', async (req, res) => {
       });
     }
 
+    const job = getCampaignJob(userId);
+    if (job.status === 'cancelled') {
+      return res.status(409).json({ error: 'Campaign cancelled. Resume or start a new campaign first.' });
+    }
+    job.status = 'running';
+    job.total = leads.length;
+    job.sent = 0;
+    job.failed = 0;
+    job.scheduledAt = null;
+    job.updatedAt = new Date().toISOString();
+    waCampaignJobs.set(userId, job);
+
     console.log(`[WhatsApp] Starting bulk send: ${leads.length} leads, testMode=${testMode}, template=${useTemplate}`);
 
     const results = [];
     const failed = [];
     let sentCount = 0;
+    let cancelledMidway = false;
 
     for (let i = 0; i < leads.length; i++) {
+      const control = await waitWhilePaused(userId);
+      if (control === 'cancelled') {
+        cancelledMidway = true;
+        results.push({ leadId: leads[i]?.id, name: leads[i]?.name, status: 'cancelled', error: 'Campaign cancelled' });
+        for (let j = i + 1; j < leads.length; j++) {
+          results.push({ leadId: leads[j]?.id, name: leads[j]?.name, status: 'cancelled', error: 'Campaign cancelled' });
+        }
+        break;
+      }
+
       const lead = leads[i];
       const phone = lead.phone || lead.phoneNumber;
 
@@ -407,21 +477,7 @@ router.post('/send-bulk', async (req, res) => {
 
           console.log(`[WhatsApp] Sending to ${formattedPhone} (${lead.name || 'Unknown'})`);
 
-          if (useTemplate && templateName) {
-            const params = templateParams.length > 0
-              ? templateParams
-              : [lead.name || 'there', lead.city || '', lead.niche || ''];
-
-            result = await sendTemplateMessage({
-              token: credentials.token,
-              phoneNumberId: credentials.phoneNumberId,
-              to: formattedPhone,
-              templateName,
-              languageCode,
-              templateParams: params,
-              testMode
-            });
-          } else {
+          const providerSend = async () => {
             let personalizedMessage = message || 'Hello!';
             personalizedMessage = personalizedMessage
               .replace(/{name}/g, lead.name || 'there')
@@ -431,17 +487,64 @@ router.post('/send-bulk', async (req, res) => {
               .replace(/{product}/g, lead.product || 'our services')
               .replace(/{offer}/g, lead.offer || '');
 
-            result = await sendTextMessage({
-              token: credentials.token,
-              phoneNumberId: credentials.phoneNumberId,
-              to: formattedPhone,
-              message: personalizedMessage,
-              testMode
+            if (useTemplate && templateName && (credentials.token || testMode)) {
+              const params = templateParams.length > 0
+                ? templateParams.map((p) => String(p)
+                  .replace(/{name}/g, lead.name || 'there')
+                  .replace(/{city}/g, lead.city || '')
+                  .replace(/{niche}/g, lead.niche || lead.business || 'business')
+                  .replace(/{company}/g, lead.company || lead.companyName || 'our company'))
+                : [lead.name || 'there', lead.city || '', lead.niche || ''];
+              return whatsappTransport.sendTemplate({
+                workspaceId: userId,
+                to: formattedPhone,
+                templateName,
+                languageCode,
+                templateParams: params,
+                testMode,
+              });
+            }
+            return providerSendText(userId, formattedPhone, personalizedMessage, testMode);
+          };
+
+          if (isPersonalContactRecipient(lead)) {
+            const contactId = lead.contactId || String(lead.id || '').replace(/^contact:/, '');
+            const personalContact = await personalContactStorage.get(contactId, { workspaceId: userId });
+            if (!personalContact) {
+              throw new Error(`Contact ${contactId} not found in workspace ${userId}`);
+            }
+            const sendResult = await providerSend();
+            if (!testMode) {
+              await recordWhatsAppContactSend({
+                workspaceId: userId,
+                contact: personalContact,
+                body: message || '[template]',
+                sendResult,
+              });
+            }
+            result = {
+              ...sendResult,
+              messageId: sendResult.messageId,
+              conversationId: undefined,
+            };
+          } else if (lead.id) {
+            const usResult = await unifiedSend.send({
+              leadId: lead.id,
+              channel: 'whatsapp',
+              body: message || '[template]',
+              providerSend,
+              metadata: { templateName, languageCode, testMode },
+              scheduleFollowUps: false, // Bulk: don't reschedule for each lead
+              workspaceId: userId,
             });
+            result = usResult;
+          } else {
+            result = await providerSend();
           }
 
           success = true;
           sessionSentPhones.add(phoneSessionKey);
+          sessionPhoneTimestamps.set(phoneSessionKey, Date.now());
           console.log(`[WhatsApp] Success: ${formattedPhone}`);
 
         } catch (error) {
@@ -460,6 +563,7 @@ router.post('/send-bulk', async (req, res) => {
           messageId: result.messageId
         });
         sentCount++;
+        job.sent = sentCount;
       } else {
         results.push({
           leadId: lead.id,
@@ -469,17 +573,24 @@ router.post('/send-bulk', async (req, res) => {
           notOnWhatsApp: lastError?.message?.includes('not registered') || lastError?.message?.includes('not on WhatsApp')
         });
         failed.push({ ...lead, error: lastError?.message });
+        job.failed = failed.length;
       }
+      job.updatedAt = new Date().toISOString();
+      waCampaignJobs.set(userId, job);
 
       // Rate-limit safe delay between messages (except last one)
-      if (i < leads.length - 1) {
+      if (i < leads.length - 1 && !cancelledMidway) {
         const actualDelay = testMode ? Math.min(delayMs, 500) : delayMs;
         console.log(`[WhatsApp] Delay ${actualDelay}ms before next message (${i + 1}/${leads.length})`);
         await new Promise(resolve => setTimeout(resolve, actualDelay));
       }
     }
 
-    console.log(`[WhatsApp] Bulk send complete: ${sentCount} sent, ${failed.length} failed, ${leads.length} total`);
+    job.status = cancelledMidway ? 'cancelled' : 'completed';
+    job.updatedAt = new Date().toISOString();
+    waCampaignJobs.set(userId, job);
+
+    console.log(`[WhatsApp] Bulk send complete: ${sentCount} sent, ${failed.length} failed, ${leads.length} total, cancelled=${cancelledMidway}`);
 
     res.json({
       success: sentCount > 0,
@@ -487,12 +598,21 @@ router.post('/send-bulk', async (req, res) => {
       sent: sentCount,
       failed: failed.length,
       skipped: leads.length - sentCount - failed.length,
+      cancelled: cancelledMidway,
       testMode,
+      campaignJob: job,
       results
     });
 
   } catch (error) {
     console.error('[WhatsApp] Bulk send fatal error:', error.message);
+    try {
+      const userId = workspaceOf(req);
+      const job = getCampaignJob(userId);
+      job.status = 'idle';
+      job.updatedAt = new Date().toISOString();
+      waCampaignJobs.set(userId, job);
+    } catch (_) { /* ignore */ }
     res.status(500).json({
       error: 'Bulk send failed',
       message: error.message
@@ -509,15 +629,11 @@ router.get('/templates', async (req, res) => {
     const credentials = getUserCredentials(userId);
 
     if (!credentials.token || !credentials.wabaId) {
-      // Return demo templates if no credentials
       return res.json({
         success: true,
-        templates: [
-          { name: 'hello_world', status: 'APPROVED', language: 'en_US', category: 'MARKETING' },
-          { name: 'welcome_message', status: 'APPROVED', language: 'en_US', category: 'UTILITY' }
-        ],
-        demo: true,
-        message: 'Showing demo templates. Configure credentials to see your real templates.'
+        templates: [],
+        configured: false,
+        message: 'WhatsApp not connected. Configure credentials in Settings to load your approved templates.',
       });
     }
 
@@ -535,79 +651,60 @@ router.get('/templates', async (req, res) => {
 
 // ==================== STATUS & INFO ====================
 
-// GET /api/whatsapp/status - Check WhatsApp configuration status
-router.get('/status', (req, res) => {
+// GET /api/whatsapp/status - Check WhatsApp Cloud API configuration status
+router.get('/status', async (req, res) => {
   const userId = workspaceOf(req);
-
-  // Force reload if missing (defensive for Render restarts)
-  if (!userCredentials.has(userId)) {
-    reloadCredentialsFromFile();
-  }
-
-  const credentials = getUserCredentials(userId);
-  const hasCredentials = !!(credentials.token && credentials.phoneNumberId);
-  const fromFile = userCredentials.has(userId);
-  const fromEnv = !fromFile && !!(process.env.WHATSAPP_TOKEN && process.env.PHONE_NUMBER_ID);
-
-  res.json({
-    configured: hasCredentials,
-    hasToken: !!credentials.token,
-    hasPhoneNumberId: !!credentials.phoneNumberId,
-    hasWabaId: !!credentials.wabaId,
-    provider: 'meta',
-    source: fromFile ? 'file' : (fromEnv ? 'env' : null),
-    envFallback: fromEnv
-  });
-});
-
-// GET /api/whatsapp/diagnostics - Debug credential state (safe, masked)
-router.get('/diagnostics', (req, res) => {
-  const userId = workspaceOf(req);
-  const fileExists = fs.existsSync(CREDENTIALS_FILE);
-  const fileSize = fileExists ? fs.statSync(CREDENTIALS_FILE).size : 0;
-
+  const status = await whatsappTransport.getQrStatus(userId);
   const creds = getUserCredentials(userId);
-  const fromFile = userCredentials.has(userId);
-
   res.json({
-    fileExists,
-    fileSize,
-    filePath: CREDENTIALS_FILE,
-    memoryCacheSize: userCredentials.size,
-    lastLoadTime: lastLoadTime ? new Date(lastLoadTime).toISOString() : null,
-    envVarsSet: {
-      WHATSAPP_TOKEN: !!process.env.WHATSAPP_TOKEN,
-      PHONE_NUMBER_ID: !!process.env.PHONE_NUMBER_ID,
-      WHATSAPP_BUSINESS_ACCOUNT_ID: !!process.env.WHATSAPP_BUSINESS_ACCOUNT_ID
+    configured: status.configured,
+    connected: status.connected,
+    status: status.status,
+    transport: 'meta',
+    provider: 'meta',
+    phone: status.phone || null,
+    hasToken: !!creds.token,
+    hasPhoneNumberId: !!creds.phoneNumberId,
+    hasWabaId: !!creds.wabaId,
+    credentialSource: creds._source,
+    webhook: {
+      verifyTokenConfigured: Boolean((process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || '').trim()),
+      signatureSecretConfigured: Boolean((process.env.WHATSAPP_APP_SECRET || process.env.META_APP_SECRET || '').trim()),
     },
-    configured: !!(creds.token && creds.phoneNumberId),
-    source: fromFile ? 'file' : 'env_or_none',
-    tokenPreview: creds.token ? creds.token.substring(0, 8) + '****' : null,
-    phoneNumberIdPreview: creds.phoneNumberId ? creds.phoneNumberId.substring(0, 6) + '****' : null
   });
 });
 
-// GET /api/whatsapp/business-info - Get WhatsApp Business info
+// GET /api/whatsapp/diagnostics
+router.get('/diagnostics', async (req, res) => {
+  const userId = workspaceOf(req);
+  const status = await whatsappTransport.getQrStatus(userId);
+  const stored = integrationStorage.get(userId, 'whatsapp');
+  res.json({
+    transport: 'meta',
+    status: status.status,
+    connected: status.connected,
+    configured: status.configured,
+    credentialSource: status.credentialSource,
+    phoneNumberId: status.phoneNumberId,
+    wabaId: status.wabaId,
+    lastError: status.lastError,
+    connectedAt: stored?.connectedAt || null,
+    updatedAt: stored?.updatedAt || null,
+  });
+});
+
+// GET /api/whatsapp/business-info
 router.get('/business-info', async (req, res) => {
   try {
     const userId = workspaceOf(req);
     const credentials = getUserCredentials(userId);
-
     if (!credentials.token || !credentials.phoneNumberId) {
-      return res.status(503).json({
-        error: 'WhatsApp not configured',
-        message: 'Please configure WhatsApp credentials first'
-      });
+      return res.status(503).json({ error: 'WhatsApp not configured' });
     }
-
     const result = await getBusinessInfo(credentials.token, credentials.phoneNumberId);
     res.json(result);
-
   } catch (error) {
-    res.status(500).json({
-      error: 'Failed to get business info',
-      message: error.message
-    });
+    res.status(500).json({ error: 'Failed to get business info', message: error.message });
   }
 });
 
@@ -617,56 +714,40 @@ router.get('/business-info', async (req, res) => {
 router.post('/test-reply', async (req, res) => {
   try {
     const { phone, message = 'Hi' } = req.body;
-
-    if (!phone) {
-      return res.status(400).json({ error: 'Phone number is required' });
-    }
+    if (!phone) return res.status(400).json({ error: 'Phone number is required' });
 
     const userId = workspaceOf(req);
-    const credentials = getUserCredentials(userId);
-
-    if (!credentials.token || !credentials.phoneNumberId) {
+    if (!isWhatsAppReady(userId)) {
       return res.status(503).json({
         error: 'WhatsApp not configured',
-        message: 'Please save credentials first via POST /api/whatsapp/credentials'
+        message: 'Configure Meta Cloud API credentials in WhatsApp Settings first',
       });
     }
 
-    // Simulate the auto-reply logic
     let replyText = 'Hello! This is an auto reply from AI agent.';
     const lowerText = message.toLowerCase();
     if (lowerText.includes('hi') || lowerText.includes('hello')) {
       replyText = 'Hello! This is an auto reply from AI agent. How can I help you today?';
     }
 
-    console.log(`🧪 TEST: Sending auto-reply to ${phone}: "${replyText}"`);
-
-    const result = await sendReply({
-      token: credentials.token,
-      phoneNumberId: credentials.phoneNumberId,
-      to: phone,
-      message: replyText
-    });
-
+    const result = await providerSendText(userId, phone, replyText, false);
     res.json({
       success: true,
       message: 'Test auto-reply sent',
       recipient: phone,
-      replyText: replyText,
-      messageId: result.messageId
+      replyText,
+      messageId: result.messageId,
     });
-
   } catch (error) {
     console.error('❌ Test reply error:', error.message);
     res.status(500).json({
       error: 'Test reply failed',
-      message: error.message
+      message: error.message,
     });
   }
 });
 
 // ==================== WEBHOOK (receiving messages & status updates) ====================
-const { sendReply } = require('../services/whatsappMeta');
 
 /**
  * Parse incoming message from Meta webhook payload
@@ -678,9 +759,9 @@ function parseIncomingMessage(body) {
     const changes = entry?.changes?.[0];
     const value = changes?.value;
 
-    // Status updates (delivered, read, sent) - ignore for auto-reply
+    // Status updates (delivered, read, sent)
     if (value?.statuses) {
-      return { type: 'status', statuses: value.statuses };
+      return { type: 'status', statuses: value.statuses, phoneNumberId: value?.metadata?.phone_number_id || null };
     }
 
     // Incoming messages
@@ -689,11 +770,12 @@ function parseIncomingMessage(body) {
       const msg = messages[0];
       return {
         type: 'message',
-        from: msg.from,           // sender's phone number
-        messageId: msg.id,         // message ID for reply context
+        messageType: msg.type,
+        from: msg.from,
+        messageId: msg.id,
         timestamp: msg.timestamp,
         text: msg.text?.body || '',
-        type: msg.type
+        phoneNumberId: value?.metadata?.phone_number_id || null,
       };
     }
 
@@ -704,82 +786,135 @@ function parseIncomingMessage(body) {
   }
 }
 
-// POST /api/whatsapp/webhook - Receive Meta webhook events
+// POST /api/whatsapp/webhook - Receive Meta webhook events (Meta transport only)
 router.post('/webhook', async (req, res) => {
+  // Always acknowledge webhook immediately (Meta requires < 20s response)
+  res.status(200).send('OK');
+
   try {
-    // Always acknowledge webhook immediately (Meta requires < 20s response)
-    res.status(200).send('OK');
-
     const body = req.body;
-    console.log('📩 Webhook received at', new Date().toISOString());
+    const workspaceId = resolveWorkspaceFromWebhookBody(body) || workspaceOf(req);
+    console.log('📩 Webhook received at', new Date().toISOString(), 'workspace=', workspaceId);
 
-    // Parse the incoming payload
     const parsed = parseIncomingMessage(body);
 
-    // Handle status updates (delivered, read, sent)
+    // ── STATUS UPDATES (delivered, read, sent) ──
     if (parsed.type === 'status') {
-      parsed.statuses.forEach(status => {
+      const timelineStorage = require('../utils/timelineStorage');
+      for (const status of parsed.statuses) {
         console.log(`📊 Status update: ${status.status} for message ${status.id}`);
-      });
+        const mappedStatus =
+          status.status === 'read' ? 'read'
+            : status.status === 'delivered' ? 'delivered'
+              : status.status === 'failed' ? 'failed'
+                : 'sent'; // sent / accepted
+        try {
+          const updated = await conversationStorage.updateMessageStatusByExternalId(status.id, mappedStatus, { workspaceId });
+          if (updated) {
+            console.log(`[Webhook] Updated message status to ${mappedStatus} for external ID ${status.id}`);
+            const eventType =
+              mappedStatus === 'read' ? 'message_read'
+                : mappedStatus === 'delivered' ? 'message_delivered'
+                  : mappedStatus === 'failed' ? 'message_failed'
+                    : 'message_sent';
+            if (updated.leadId) {
+              await timelineStorage.recordEvent({
+                leadId: updated.leadId,
+                type: eventType,
+                channel: updated.channel || 'whatsapp',
+                conversationId: updated.conversationId,
+                referenceId: status.id,
+                payload: {
+                  status: mappedStatus,
+                  providerTimestamp: status.timestamp || null,
+                  errors: status.errors || null,
+                },
+              }, { workspaceId }).catch((e) => console.error('[Webhook] timeline status event failed:', e.message));
+            }
+            if (mappedStatus === 'failed') {
+              const errDetail = (status.errors || []).map((e) => `${e.code}: ${e.title || e.message || ''}`).join('; ');
+              console.warn(`[Webhook] Message ${status.id} FAILED on Meta side: ${errDetail || 'no error details'}`);
+            }
+          }
+        } catch (err) {
+          console.error('[Webhook] Failed to update message status:', err.message);
+        }
+      }
       return;
     }
 
-    // Handle incoming messages
+    // ── INCOMING MESSAGES ──
     if (parsed.type === 'message') {
       const { from, text, messageId } = parsed;
       console.log(`📨 Incoming message from ${from}: "${text}"`);
 
-      // Skip if no text
       if (!text || !from) {
         console.log('⚠️ No text or sender found, skipping');
         return;
       }
 
-      // Webhook is unauthenticated (Meta has no user token) → default workspace.
-      const userId = workspaceOf(req);
-      const credentials = getUserCredentials(userId);
+      const normalizedPhone = formatPhoneNumber(from);
 
-      // Check if credentials exist
-      if (!credentials.token || !credentials.phoneNumberId) {
-        console.error('❌ No WhatsApp credentials configured. Cannot send auto-reply.');
-        console.log('   Please configure credentials via POST /api/whatsapp/credentials');
-        return;
+      // 1. Find lead by phone
+      const lead = await contactStorage.findLeadByContact({ workspaceId, channel: 'whatsapp', value: normalizedPhone })
+        || await leadStorage.findByPhone(normalizedPhone, { workspaceId });
+      if (!lead) {
+        console.log(`[Webhook] No lead found for phone ${normalizedPhone}, storing orphan message`);
+      }
+      const leadId = lead ? lead.id : `orphan_${normalizedPhone}`;
+
+      // 2. Update CRM pipeline: mark as replied, cancel follow-ups
+      await campaignStorage.recordReply(leadId, { workspaceId, channel: 'whatsapp', messageText: text });
+      await campaignStorage.cancelFollowUps(leadId, { workspaceId });
+      console.log(`[Webhook] Pipeline updated for lead ${leadId}: status=replied, follow-ups cancelled`);
+
+      // 3. Create or find conversation
+      let conv = await conversationStorage.findConversation({ workspaceId, leadId, channel: 'whatsapp' });
+      if (!conv) {
+        conv = await conversationStorage.createConversation(
+          { leadId, channel: 'whatsapp', status: 'open', subject: lead ? `WhatsApp with ${lead.name}` : 'WhatsApp conversation' },
+          { workspaceId }
+        );
+        console.log(`[Webhook] Created new conversation ${conv.id} for lead ${leadId}`);
       }
 
-      // Build auto-reply message
-      let replyText = 'Hello! This is an auto reply from AI agent.';
+      // 4. Store inbound message (auto-increments unreadCount)
+      await conversationStorage.addMessage(
+        conv.id,
+        {
+          direction: 'inbound',
+          body: text,
+          channel: 'whatsapp',
+          source: 'webhook',
+          externalMessageId: messageId || null,
+        },
+        { workspaceId }
+      );
+      console.log(`[Webhook] Inbound message stored in conversation ${conv.id}`);
 
-      // Simple keyword-based replies (expandable)
-      const lowerText = text.toLowerCase();
-      if (lowerText.includes('hi') || lowerText.includes('hello') || lowerText.includes('hey')) {
-        replyText = 'Hello! This is an auto reply from AI agent. How can I help you today?';
-      } else if (lowerText.includes('help')) {
-        replyText = 'I can help you with:\n• General inquiries\n• Business information\n• Appointment booking\n\nWhat do you need?';
-      } else if (lowerText.includes('price') || lowerText.includes('cost') || lowerText.includes('how much')) {
-        replyText = 'Thank you for your interest! Please share more details about what you need, and I will provide pricing information.';
-      } else if (lowerText.includes('thank')) {
-        replyText = 'You are welcome! Let me know if you need anything else.';
-      } else if (lowerText.includes('bye') || lowerText.includes('goodbye')) {
-        replyText = 'Goodbye! Have a great day. Feel free to message us anytime.';
+      // Autonomous AI WhatsApp reply (server-side, same engine as Email)
+      if (!String(leadId).startsWith('preview_')) {
+        const autonomousReplyService = require('../services/autonomousReplyService');
+        setImmediate(() => {
+          autonomousReplyService.maybeAutoReplyToInbound({
+            workspaceId,
+            conversationId: conv.id,
+            userId: workspaceId,
+            expectedChannel: 'whatsapp',
+          }).then((autoResult) => {
+            if (autoResult.sent) {
+              console.log(`[Webhook] Autonomous AI reply sent for conversation ${conv.id}`);
+            }
+          }).catch((autoErr) => {
+            console.error('[Webhook] Autonomous AI reply failed (non-fatal):', autoErr.message);
+          });
+        });
       }
-
-      console.log(`🤖 Sending auto-reply to ${from}: "${replyText}"`);
-
-      // Send the reply via Meta API
-      const result = await sendReply({
-        token: credentials.token,
-        phoneNumberId: credentials.phoneNumberId,
-        to: from,
-        message: replyText,
-        replyToMessageId: messageId
-      });
-
-      console.log(`✅ Auto-reply sent! Message ID: ${result.messageId}`);
     }
 
   } catch (error) {
     console.error('❌ Webhook processing error:', error.message);
-    // Already responded 200 OK above, so just log the error
+    console.error(error.stack);
   }
 });
 
@@ -791,7 +926,11 @@ router.get('/webhook', (req, res) => {
   const token = (req.query['hub.verify_token'] || req.query?.hub?.verify_token || '').toString().trim();
   const challenge = req.query['hub.challenge'] || req.query?.hub?.challenge;
 
-  const VERIFY_TOKEN = (process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || 'leadgen-verify-token').toString().trim();
+  const VERIFY_TOKEN = (process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || '').toString().trim();
+  if (!VERIFY_TOKEN) {
+    console.error('[WhatsApp Webhook] WHATSAPP_WEBHOOK_VERIFY_TOKEN is not configured');
+    return res.status(503).send('Webhook verification not configured');
+  }
 
   console.log('[WhatsApp Webhook] Verification request received');
   console.log('  URL:', req.originalUrl);
@@ -818,4 +957,343 @@ router.get('/webhook', (req, res) => {
   return res.status(403).send('Forbidden');
 });
 
+// ==================== ENTERPRISE WORKSPACE ====================
+
+// GET /api/whatsapp/workspace — Cloud API connection + account status
+router.get('/workspace', async (req, res) => {
+  try {
+    const userId = workspaceOf(req);
+    const stored = integrationStorage.get(userId, 'whatsapp');
+    const status = await whatsappTransport.getQrStatus(userId);
+
+    let live = null;
+    if (status.configured) {
+      live = await whatsappTransport.verifyConnection(userId).catch((err) => ({ ok: false, error: err.message }));
+    }
+
+    res.json({
+      success: true,
+      connectionStatus: status.configured && live?.ok !== false ? 'connected' : (status.configured ? 'error' : 'disconnected'),
+      configured: status.configured,
+      provider: 'meta',
+      transport: 'meta',
+      credentialSource: status.credentialSource,
+      lastConnectedAt: stored?.connectedAt || stored?.updatedAt || null,
+      account: {
+        phoneNumberId: status.phoneNumberId || null,
+        wabaId: status.wabaId || null,
+        displayPhoneNumber: live?.displayPhoneNumber || null,
+        displayName: live?.verifiedName || live?.waba?.name || null,
+        businessName: live?.waba?.name || null,
+        displayNameStatus: live?.displayNameStatus || null,
+        qualityRating: live?.qualityRating || null,
+        messagingLimit: live?.messagingLimit || null,
+        verifiedStatus: live?.codeVerificationStatus || null,
+        platformType: 'cloud_api',
+      },
+      tokenStatus: !status.configured ? 'not_configured' : (live?.ok ? 'valid' : (live?.tokenStatus || 'invalid')),
+      connectionError: live?.ok === false ? (live.error || null) : null,
+      webhook: {
+        url: '/api/whatsapp/webhook',
+        verifyTokenConfigured: Boolean((process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || '').trim()),
+        signatureSecretConfigured: Boolean((process.env.WHATSAPP_APP_SECRET || process.env.META_APP_SECRET || '').trim()),
+        note: 'Subscribe this URL in Meta App Dashboard → WhatsApp → Configuration → Webhook (fields: messages)',
+      },
+      connect: {
+        mode: 'cloud_api',
+        note: 'Set Meta Cloud API credentials (token, phone number ID, WABA ID) below or via environment variables',
+      },
+      campaignJob: getCampaignJob(userId),
+    });
+  } catch (error) {
+    console.error('[WhatsApp] workspace error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/whatsapp/stats — live counters from messages table
+router.get('/stats', async (req, res) => {
+  try {
+    const workspaceId = workspaceOf(req);
+    const counts = await conversationStorage.getMessageCountsByChannel({ workspaceId });
+    const wa = counts.whatsapp || { sent: 0, replies: 0, delivered: 0, read: 0, failed: 0 };
+    const sent = Number(wa.sent) || 0;
+    const delivered = Number(wa.delivered) || 0;
+    const read = Number(wa.read) || 0;
+    const failed = Number(wa.failed) || 0;
+    const replied = Number(wa.replies) || 0;
+    const job = getCampaignJob(workspaceId);
+    const queued = job.status === 'running' || job.status === 'paused'
+      ? Math.max(0, (job.total || 0) - (job.sent || 0) - (job.failed || 0))
+      : 0;
+    const total = sent + replied;
+    const responseRate = sent > 0 ? Math.round((replied / sent) * 1000) / 10 : 0;
+    // delivered already includes read statuses from message counts
+    const successRate = sent > 0 ? Math.round((delivered / sent) * 1000) / 10 : 0;
+
+    res.json({
+      success: true,
+      stats: {
+        total,
+        queued,
+        sent,
+        delivered,
+        read,
+        failed,
+        replied,
+        responseRate,
+        successRate,
+      },
+      campaignJob: job,
+      generatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('[WhatsApp] stats error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/whatsapp/logs — recent WhatsApp message activity from DB
+router.get('/logs', async (req, res) => {
+  try {
+    const workspaceId = workspaceOf(req);
+    const limit = Math.min(parseInt(req.query.limit || '80', 10), 200);
+    const conversations = await conversationStorage.getConversations({ workspaceId });
+    const waConvs = (conversations || []).filter((c) => c.channel === 'whatsapp').slice(0, 40);
+    const logs = [];
+    for (const conv of waConvs) {
+      const messages = await conversationStorage.getMessages(conv.id, { workspaceId });
+      for (const m of messages || []) {
+        logs.push({
+          id: m.id,
+          conversationId: conv.id,
+          leadId: conv.leadId,
+          direction: m.direction,
+          status: m.status || null,
+          body: (m.body || '').slice(0, 240),
+          externalMessageId: m.externalMessageId || null,
+          messageType: m.messageType || 'text',
+          createdAt: m.createdAt,
+          error: m.metadata?.error || null,
+        });
+      }
+    }
+    logs.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+
+    let timeline = [];
+    try {
+      const events = await timelineStorage.getWorkspaceEvents({ workspaceId, limit: 200 });
+      timeline = (events || [])
+        .filter((e) => e.channel === 'whatsapp' || ['message_delivered', 'message_read', 'message_sent', 'message_received'].includes(e.type))
+        .slice(0, 40)
+        .map((e) => ({
+          id: e.id,
+          type: e.type,
+          leadId: e.leadId,
+          channel: e.channel,
+          createdAt: e.createdAt || e.created_at,
+          payload: e.payload || null,
+        }));
+    } catch (_) { /* optional */ }
+
+    res.json({ success: true, logs: logs.slice(0, limit), timeline, count: Math.min(logs.length, limit) });
+  } catch (error) {
+    console.error('[WhatsApp] logs error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/whatsapp/campaign-control — pause | resume | cancel | schedule
+router.post('/campaign-control', (req, res) => {
+  const workspaceId = workspaceOf(req);
+  const { action, scheduledAt, total, payload } = req.body || {};
+  const job = getCampaignJob(workspaceId);
+  const act = String(action || '').toLowerCase();
+
+  if (act === 'start') {
+    job.status = 'running';
+    job.total = Number(total) || job.total || 0;
+    job.sent = 0;
+    job.failed = 0;
+    job.scheduledAt = null;
+    if (payload) job.payload = payload;
+  } else if (act === 'pause') {
+    if (job.status === 'running') job.status = 'paused';
+  } else if (act === 'resume') {
+    if (job.status === 'paused' || job.status === 'cancelled') job.status = 'running';
+  } else if (act === 'cancel') {
+    job.status = 'cancelled';
+  } else if (act === 'schedule') {
+    job.status = 'scheduled';
+    job.scheduledAt = scheduledAt || null;
+    if (payload) job.payload = payload;
+    if (total != null) job.total = Number(total) || 0;
+  } else if (act === 'complete') {
+    job.status = 'completed';
+  } else {
+    return res.status(400).json({ error: 'action must be start|pause|resume|cancel|schedule|complete' });
+  }
+  job.updatedAt = new Date().toISOString();
+  waCampaignJobs.set(workspaceId, job);
+  res.json({ success: true, campaignJob: job });
+});
+
+// GET /api/whatsapp/campaign-control
+router.get('/campaign-control', (req, res) => {
+  res.json({ success: true, campaignJob: getCampaignJob(workspaceOf(req)) });
+});
+
+// POST /api/whatsapp/ai-compose — write | rewrite | translate (real OpenAI when configured)
+router.post('/ai-compose', async (req, res) => {
+  try {
+    const workspaceId = workspaceOf(req);
+    const userId = req.auth?.userId || workspaceId;
+    const { action = 'write', text = '', language = 'en', tone = 'professional', businessType = 'business', goal = 'booking' } = req.body || {};
+
+    const oa = await openAiKeyService.getOpenAiConfig(userId);
+    if (!oa || oa.blocked) {
+      return res.status(503).json({ error: oa?.reason || 'OpenAI not available', blocked: true });
+    }
+
+    let userPrompt = '';
+    if (action === 'rewrite') {
+      userPrompt = `Rewrite this WhatsApp message in a ${tone} tone. Keep meaning. Language: ${language}. Keep placeholders {name}/{city}/{niche}.\n\nMessage:\n${text}\n\nReturn JSON: {"message":"..."}`;
+    } else if (action === 'translate') {
+      userPrompt = `Translate this WhatsApp message to ${language}. Keep placeholders {name}, {city}, {niche}.\n\nMessage:\n${text}\n\nReturn JSON: {"message":"..."}`;
+    } else {
+      userPrompt = `Write a WhatsApp outreach message for a ${businessType}. Goal: ${goal}. Tone: ${tone}. Language: ${language}. Use placeholders {name}, {city}, {niche} where natural. Return JSON: {"message":"..."}`;
+    }
+
+    const parsed = await aiProvider.callOpenAI(
+      [
+        { role: 'system', content: 'You write concise WhatsApp business messages. Always return valid JSON with a message field.' },
+        { role: 'user', content: userPrompt },
+      ],
+      0.7,
+      500,
+      { apiKey: oa.apiKey, model: oa.model, baseUrl: oa.baseUrl },
+    );
+    const message = String(parsed?.message || parsed?.text || '').trim();
+    if (!message) throw new Error('AI returned an empty message');
+    if (oa.source === 'master') {
+      try { await openAiKeyService.consumeFreeMessage(userId, 'master'); } catch (_) { /* ignore */ }
+    }
+    res.json({ success: true, action, message, language, tone });
+  } catch (error) {
+    console.error('[WhatsApp] ai-compose error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/whatsapp/send-media — image | document | video
+router.post('/send-media', async (req, res) => {
+  try {
+    const workspaceId = workspaceOf(req);
+    const { testMode: mediaTestMode = false } = req.body || {};
+    if (!mediaTestMode && !isWhatsAppReady(workspaceId)) {
+      return res.status(503).json({ error: 'WhatsApp not configured. Set Meta Cloud API credentials in Settings.' });
+    }
+    const {
+      phone, leadId, mediaType = 'image', mediaUrl, caption = '', filename,
+      testMode = false,
+    } = req.body || {};
+    if (!phone || !mediaUrl) {
+      return res.status(400).json({ error: 'phone and mediaUrl are required' });
+    }
+
+    let result;
+    if (mediaType === 'document') {
+      result = await whatsappTransport.sendDocument({
+        workspaceId,
+        to: phone,
+        documentUrl: mediaUrl,
+        filename: filename || 'document.pdf',
+        caption,
+        testMode: !!testMode,
+      });
+    } else if (mediaType === 'video') {
+      result = await whatsappTransport.sendVideo({
+        workspaceId,
+        to: phone,
+        videoUrl: mediaUrl,
+        caption,
+        testMode: !!testMode,
+      });
+    } else {
+      result = await whatsappTransport.sendImage({
+        workspaceId,
+        to: phone,
+        imageUrl: mediaUrl,
+        caption,
+        testMode: !!testMode,
+      });
+    }
+
+    if (leadId && !testMode) {
+      try {
+        // Verify lead exists before creating conversation (avoid orphan conversations)
+        const leadExists = leadId.startsWith('contact:') || leadId.startsWith('orphan_')
+          || await leadStorage.getLead(leadId, { workspaceId }).catch(() => null)
+          || await contactStorage.findLeadByContact({ workspaceId, channel: 'whatsapp', value: leadId }).catch(() => null);
+        if (!leadExists && !leadId.startsWith('orphan_')) {
+          console.warn(`[WhatsApp] send-media: lead ${leadId} not found, skipping conversation storage`);
+        } else {
+          let conv = await conversationStorage.findConversation({ workspaceId, leadId, channel: 'whatsapp' });
+          if (!conv) {
+            conv = await conversationStorage.createConversation(
+              { leadId, channel: 'whatsapp', subject: 'WhatsApp Outreach' },
+              { workspaceId },
+            );
+          }
+          await conversationStorage.addMessage(conv.id, {
+            direction: 'outbound',
+            body: caption || `[${mediaType} attachment]`,
+            channel: 'whatsapp',
+            source: 'composer',
+            externalMessageId: result.messageId || null,
+            messageType: mediaType,
+            metadata: {
+              mediaUrl,
+              mediaType,
+              filename: filename || null,
+              imageUrl: mediaType === 'image' ? mediaUrl : undefined,
+              attachments: [{
+                url: mediaUrl,
+                type: mediaType,
+                filename: filename || null,
+              }],
+            },
+          }, { workspaceId });
+          await campaignStorage.recordSent(leadId, { workspaceId, channel: 'whatsapp' }).catch(() => null);
+        }
+      } catch (persistErr) {
+        console.warn('[WhatsApp] media persist failed:', persistErr.message);
+      }
+    }
+
+    res.json({ success: true, ...result });
+  } catch (error) {
+    console.error('[WhatsApp] send-media error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/whatsapp/test-connection — validate live Meta credentials + account info
+router.post('/test-connection', async (req, res) => {
+  try {
+    const userId = workspaceOf(req);
+    if (!whatsappTransport.isConfigured(userId)) {
+      return res.status(503).json({ success: false, valid: false, error: 'Credentials not configured' });
+    }
+    const result = await whatsappTransport.verifyConnection(userId);
+    if (!result.ok) {
+      return res.json({ success: false, valid: false, error: result.error });
+    }
+    res.json({ success: true, valid: true, ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, valid: false, error: error.message });
+  }
+});
+
+router.getUserCredentials = getUserCredentials;
 module.exports = router;

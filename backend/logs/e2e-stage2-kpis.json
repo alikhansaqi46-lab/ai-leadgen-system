@@ -1,0 +1,107 @@
+{
+  "workspaceDashboard": {
+    "revenue": 1181,
+    "quotesSent": 0,
+    "quotesAccepted": 1,
+    "invoicesPaid": 1,
+    "invoicePaidValue": 1181
+  },
+  "executive": {
+    "revenueToday": {
+      "value": 1181,
+      "label": "Total Revenue Today",
+      "source": "admin_payment_events + sales_documents (paid invoices)",
+      "saas": 0,
+      "invoices": 1181,
+      "growthPct": null
+    },
+    "revenueMonth": {
+      "value": 1181,
+      "label": "Total Revenue This Month",
+      "source": "admin_payment_events + sales_documents (paid invoices)",
+      "saas": 0,
+      "invoices": 1181,
+      "growthPct": 0
+    },
+    "funnel": [
+      {
+        "key": "scraped",
+        "label": "Leads Scraped",
+        "value": 490
+      },
+      {
+        "key": "qualified",
+        "label": "Qualified",
+        "value": 9
+      },
+      {
+        "key": "quotes",
+        "label": "Quotes Sent",
+        "value": 0
+      },
+      {
+        "key": "accepted",
+        "label": "Quotes Accepted",
+        "value": 1
+      },
+      {
+        "key": "meetings",
+        "label": "Meetings Booked",
+        "value": 6
+      },
+      {
+        "key": "paid",
+        "label": "Invoices Paid",
+        "value": 1
+      },
+      {
+        "key": "deals",
+        "label": "Deals Closed",
+        "value": 2
+      }
+    ],
+    "totalAiWins": {
+      "value": 20,
+      "label": "Total AI Wins",
+      "source": "owner_success_events",
+      "growthPct": null,
+      "trend": "+19 today"
+    },
+    "aiHealth": 63
+  },
+  "patterns": {
+    "funnel": {
+      "draft": 0,
+      "sent": 0,
+      "viewed": 0,
+      "accepted": 1,
+      "converted": 1,
+      "paid": 1
+    },
+    "templates": [
+      {
+        "key": "corporate",
+        "wins": 2,
+        "total": 2,
+        "winRate": 100,
+        "avgDeal": 1181,
+        "revenue": 2362
+      }
+    ],
+    "channels": [
+      {
+        "key": "manual",
+        "wins": 0,
+        "signals": 0,
+        "winRate": 0
+      }
+    ],
+    "avgDeal": 1181,
+    "avgCycle": 0,
+    "winLoss": {
+      "accepted": 1,
+      "rejected": 0,
+      "paid": 1
+    }
+  }
+}

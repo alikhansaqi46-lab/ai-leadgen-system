@@ -6,6 +6,26 @@ export const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY || '';
 
 // Module-level access token so non-axios callers (e.g. the scrape fetch) can
 // attach the Authorization header without prop-drilling.
+// Also persisted to localStorage so refresh keeps the custom /api/auth session.
+const TOKEN_KEY = 'lf_auth_token';
 let accessToken = null;
-export function setAccessToken(token) { accessToken = token || null; }
-export function getAccessToken() { return accessToken; }
+
+export function setAccessToken(token) {
+  accessToken = token || null;
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // ignore quota / private-mode failures
+  }
+}
+
+export function getAccessToken() {
+  if (accessToken) return accessToken;
+  try {
+    accessToken = localStorage.getItem(TOKEN_KEY);
+  } catch {
+    accessToken = null;
+  }
+  return accessToken;
+}

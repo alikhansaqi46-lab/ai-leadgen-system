@@ -1,0 +1,72 @@
+/**
+ * BiDi-safe message rendering — relies on browser Unicode Bidirectional Algorithm.
+ * Never reverses text in JS; dir + unicode-bidi only.
+ */
+
+.lf-message-content {
+  text-align: start;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  max-width: 100%;
+}
+
+/* Plain text / SMS / chat — per-line direction from first strong character (Gmail-like). */
+.lf-message-content--plain {
+  white-space: pre-wrap;
+  unicode-bidi: plaintext;
+  margin: 0;
+}
+
+/* HTML email / rich content — isolate embedding levels; preserve nested dir= from source. */
+.lf-message-content--html {
+  unicode-bidi: isolate;
+}
+
+.lf-message-content--html p,
+.lf-message-content--html div,
+.lf-message-content--html li,
+.lf-message-content--html blockquote {
+  text-align: start;
+  margin-block: 0.35em;
+}
+
+.lf-message-content--html ul,
+.lf-message-content--html ol {
+  padding-inline-start: 1.4em;
+  margin-block: 0.35em;
+}
+
+.lf-message-content--html img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.lf-message-content--html table {
+  border-collapse: collapse;
+  max-width: 100%;
+}
+
+.lf-message-content--html a {
+  word-break: break-all;
+}
+
+.lf-message-content--html [dir='rtl'],
+.lf-message-content--html [dir='ltr'],
+.lf-message-content--html [dir='auto'] {
+  unicode-bidi: isolate;
+}
+
+/* Compose fields follow typed content direction */
+.lf-bidi-field {
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+
+.lf-bidi-field--multiline {
+  white-space: pre-wrap;
+}

@@ -1,0 +1,286 @@
+{
+  "at": "2026-07-31T03:52:05.567Z",
+  "workspaceId": "usr_super_admin_1783323507243",
+  "conversationId": "839c80b4-523e-48fa-b4b0-f43fd0f9384e",
+  "inboundId": "ab01d06e-e115-4050-9a9b-51db250db9ab",
+  "passed": true,
+  "failCount": 0,
+  "results": [
+    {
+      "name": "schema_metadata_ensure",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "create_whatsapp_conversation",
+      "ok": true,
+      "detail": "839c80b4-523e-48fa-b4b0-f43fd0f9384e"
+    },
+    {
+      "name": "store_media_metadata",
+      "ok": true,
+      "detail": {
+        "imageUrl": "/uploads/parity-test.png",
+        "mediaUrl": "/uploads/parity-test.png",
+        "attachments": [
+          {
+            "url": "/uploads/parity-test.png",
+            "type": "image"
+          }
+        ]
+      }
+    },
+    {
+      "name": "get_conversation_settings",
+      "ok": true,
+      "detail": {
+        "success": true,
+        "conversationId": "839c80b4-523e-48fa-b4b0-f43fd0f9384e",
+        "channel": "whatsapp",
+        "status": "open",
+        "settings": {
+          "autoReplyEnabled": true,
+          "humanTakeover": false,
+          "needsHuman": false
+        }
+      }
+    },
+    {
+      "name": "human_takeover",
+      "ok": true,
+      "detail": {
+        "success": true,
+        "conversationId": "839c80b4-523e-48fa-b4b0-f43fd0f9384e",
+        "status": "human_active",
+        "settings": {
+          "autoReplyEnabled": true,
+          "humanTakeover": true
+        }
+      }
+    },
+    {
+      "name": "takeover_persisted",
+      "ok": true,
+      "detail": {
+        "success": true,
+        "conversationId": "839c80b4-523e-48fa-b4b0-f43fd0f9384e",
+        "channel": "whatsapp",
+        "status": "human_active",
+        "settings": {
+          "autoReplyEnabled": true,
+          "humanTakeover": true,
+          "needsHuman": false
+        }
+      }
+    },
+    {
+      "name": "auto_reply_blocked_during_takeover",
+      "ok": true,
+      "detail": {
+        "error": "human_takeover",
+        "sent": false
+      }
+    },
+    {
+      "name": "resume_ai",
+      "ok": true,
+      "detail": {
+        "success": true,
+        "conversationId": "839c80b4-523e-48fa-b4b0-f43fd0f9384e",
+        "status": "ai_active",
+        "settings": {
+          "autoReplyEnabled": true,
+          "humanTakeover": false
+        }
+      }
+    },
+    {
+      "name": "per_conversation_auto_reply_off",
+      "ok": true,
+      "detail": {
+        "success": true,
+        "conversationId": "839c80b4-523e-48fa-b4b0-f43fd0f9384e",
+        "status": "ai_active",
+        "settings": {
+          "autoReplyEnabled": false,
+          "humanTakeover": false,
+          "needsHuman": false
+        }
+      }
+    },
+    {
+      "name": "per_conversation_auto_reply_on",
+      "ok": true,
+      "detail": {
+        "success": true,
+        "conversationId": "839c80b4-523e-48fa-b4b0-f43fd0f9384e",
+        "status": "ai_active",
+        "settings": {
+          "autoReplyEnabled": true,
+          "humanTakeover": false,
+          "needsHuman": false
+        }
+      }
+    },
+    {
+      "name": "global_ai_agent_settings_reachable",
+      "ok": true,
+      "detail": {
+        "email": true,
+        "whatsapp": true
+      }
+    },
+    {
+      "name": "global_whatsapp_auto_reply_save",
+      "ok": true,
+      "detail": {
+        "businessName": "ASA DENTAL CARE",
+        "companyDescription": "ASA Dental Care is committed to providing high-quality medicated toothpaste designed to improve oral health. Our products help protect teeth and gums, reduce plaque, strengthen enamel, freshen breath, and support healthier smiles for individuals and families.",
+        "products": "Advanced Care Medicated Toothpaste, Sensitive Teeth Toothpaste, Whitening Toothpaste, Fresh Breath Toothpaste, Gum Care Toothpaste, Daily Protection Toothpaste, Family Oral Care Toothpaste.",
+        "services": "We provide premium oral care products, customer support, product recommendations, order assistance, and guidance to help customers choose the most suitable toothpaste for their dental needs.",
+        "pricing": "Product prices vary depending on the toothpaste type, size, and current promotions.  exact price is 20RM, ",
+        "features": "Strengthens enamel, protects against cavities, supports healthy gums, freshens breath, helps whiten teeth, contains fluoride, xylitol, activated charcoal, aloe vera extract, and peppermint oil. Safe for daily use and suitable for the whole family.",
+        "offers": "Current promotional offers may include discounts for first-time customers or limited-time campaigns. If no verified offer is available, inform the customer that there are currently no active confirmed offers.",
+        "promotions": "Limited Time Offer: Get 20% OFF on your first purchase of ASA Medicated Toothpaste. This promotion is available for a limited time and is subject to availability.",
+        "faqs": "Our toothpaste is suitable for daily use. It helps strengthen enamel, reduce cavities, improve gum health, freshen breath, and whiten teeth. For medical advice or severe dental conditions, customers should consult a qualified dentist.",
+        "objectionHandling": "If customers are unsure about the product, explain its key benefits, ingredients, and daily oral health advantages. Never exaggerate or make medical claims that cannot be verified. If information is unavailable, politely offer to connect them with a representative.",
+        "salesTone": "professional and friendly",
+        "writingStyle": "concise, clear, and helpful",
+        "languages": [
+          "English"
+        ],
+        "callToAction": "",
+        "companyPolicies": "",
+        "appointmentInstructions": "If a customer requests a consultation or product discussion, collect their name, preferred contact method, and preferred time. Inform them that a representative will contact them as soon as possible. ",
+        "supportInfo": "For additional product information, pricing, bulk orders, or support requests, customers can contact the ASA Dental Care support team through the official business contact details provided by the company.",
+        "emailAutoReplyEnabled": true,
+        "whatsappAutoReplyEnabled": true,
+        "humanTakeoverKeywords": [
+          "human",
+          "agent",
+          "call me",
+          "speak to someone",
+          "representative"
+        ]
+      }
+    },
+    {
+      "name": "messages_include_media_metadata",
+      "ok": true,
+      "detail": {
+        "count": 2,
+        "mediaFound": true
+      }
+    },
+    {
+      "name": "conversation_timeline",
+      "ok": true,
+      "detail": {
+        "events": 5
+      }
+    },
+    {
+      "name": "inbox_lists_whatsapp_threads",
+      "ok": true,
+      "detail": {
+        "total": 16
+      }
+    },
+    {
+      "name": "phone_identity_merge",
+      "ok": true,
+      "detail": {
+        "a": "573391bd-e4cb-4acf-b50a-6aa13084664d",
+        "b": "573391bd-e4cb-4acf-b50a-6aa13084664d"
+      }
+    },
+    {
+      "name": "archive_conversation",
+      "ok": true,
+      "detail": {
+        "success": true,
+        "conversationId": "839c80b4-523e-48fa-b4b0-f43fd0f9384e",
+        "archived": true
+      }
+    },
+    {
+      "name": "live_auto_reply_send",
+      "ok": true,
+      "detail": "skipped (set VERIFY_WA_LIVE=1 to exercise transport)"
+    }
+  ],
+  "checklist": [
+    {
+      "feature": "Full conversation history (shared Inbox)",
+      "email": true,
+      "whatsapp": true,
+      "notes": "Same conversationStorage + InboxPage"
+    },
+    {
+      "feature": "Media rendering in timeline",
+      "email": true,
+      "whatsapp": true,
+      "notes": "image/video/document via metadata.attachments"
+    },
+    {
+      "feature": "AI Auto Reply (shared autonomousReplyService)",
+      "email": true,
+      "whatsapp": true,
+      "notes": "Per-thread + global toggles"
+    },
+    {
+      "feature": "Human Takeover / Resume AI",
+      "email": true,
+      "whatsapp": true,
+      "notes": "metadata.humanTakeover + status human_active"
+    },
+    {
+      "feature": "Conversation states (AI/Human/Quote/Invoice/Closed)",
+      "email": true,
+      "whatsapp": true,
+      "notes": "deriveNotificationStatus shared"
+    },
+    {
+      "feature": "Quote / Invoice from thread",
+      "email": true,
+      "whatsapp": true,
+      "notes": "QuoteActionButtons channel-agnostic"
+    },
+    {
+      "feature": "Archive / Delete / Timeline / Notes / Profile",
+      "email": true,
+      "whatsapp": true,
+      "notes": "Shared Thread + CustomerPanel"
+    },
+    {
+      "feature": "Drafts / AI suggestions",
+      "email": true,
+      "whatsapp": true,
+      "notes": "Same generateReply path"
+    },
+    {
+      "feature": "Contact sync by phone",
+      "email": "N/A (email identity)",
+      "whatsapp": true,
+      "notes": "personal contact → lead → orphan_<phone>"
+    },
+    {
+      "feature": "Gmail thread headers / subject line",
+      "email": true,
+      "whatsapp": "N/A",
+      "notes": "Email-only transport concern"
+    },
+    {
+      "feature": "Email open/click tracking",
+      "email": true,
+      "whatsapp": "N/A",
+      "notes": "Not applicable to WhatsApp"
+    },
+    {
+      "feature": "WhatsApp delivery receipts",
+      "email": "N/A",
+      "whatsapp": true,
+      "notes": "message_delivered / message_read timeline"
+    }
+  ]
+}

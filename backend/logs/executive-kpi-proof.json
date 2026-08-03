@@ -1,0 +1,298 @@
+{
+  "generatedAt": "2026-07-29T06:25:16.848Z",
+  "endpoint": "GET /api/admin/metrics/executive (+ overview.executive)",
+  "kpiCount": 20,
+  "missingKeys": [],
+  "checks": [
+    {
+      "label": "revenueToday",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "label": "revenueMonth",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "label": "revenueYear",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "label": "arr=mrr*12",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "label": "activeCustomers",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "label": "totalCustomers",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "label": "newCustomersToday",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "label": "churnRate",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "label": "retentionRate",
+      "expected": 100,
+      "actual": 100,
+      "ok": true
+    },
+    {
+      "label": "runningCampaigns",
+      "expected": 50,
+      "actual": 50,
+      "ok": true
+    },
+    {
+      "label": "completedCampaigns",
+      "expected": 2,
+      "actual": 2,
+      "ok": true
+    },
+    {
+      "label": "failedCampaigns",
+      "expected": 0,
+      "actual": 0,
+      "ok": true
+    },
+    {
+      "label": "totalAiWins",
+      "expected": 16,
+      "actual": 16,
+      "ok": true
+    },
+    {
+      "label": "meetingsBooked",
+      "expected": 6,
+      "actual": 6,
+      "ok": true
+    },
+    {
+      "label": "dealsClosed",
+      "expected": 2,
+      "actual": 2,
+      "ok": true
+    },
+    {
+      "label": "totalReplies",
+      "expected": 34,
+      "actual": 34,
+      "ok": true
+    }
+  ],
+  "failed": 0,
+  "passed": 16,
+  "sampleKpis": {
+    "revenueToday": {
+      "value": 0,
+      "label": "Total Revenue Today",
+      "source": "admin_payment_events",
+      "growthPct": null
+    },
+    "revenueMonth": {
+      "value": 0,
+      "label": "Total Revenue This Month",
+      "source": "admin_payment_events",
+      "growthPct": 0
+    },
+    "revenueYear": {
+      "value": 0,
+      "label": "Total Revenue This Year",
+      "source": "admin_payment_events",
+      "growthPct": null
+    },
+    "mrr": {
+      "value": 0,
+      "label": "Monthly Recurring Revenue (MRR)",
+      "source": "users.subscription_status + admin_payment_events",
+      "growthPct": null
+    },
+    "arr": {
+      "value": 0,
+      "label": "Annual Recurring Revenue (ARR)",
+      "source": "MRR × 12",
+      "growthPct": null
+    },
+    "activeCustomers": {
+      "value": 0,
+      "label": "Active Customers",
+      "source": "users (paid + active)",
+      "growthPct": null
+    },
+    "totalCustomers": {
+      "value": 0,
+      "label": "Total Customers",
+      "source": "users (non-super_admin)",
+      "growthPct": null
+    },
+    "newCustomersToday": {
+      "value": 0,
+      "label": "New Customers Today",
+      "source": "users.created_at",
+      "growthPct": null
+    },
+    "churnRate": {
+      "value": 0,
+      "label": "Churn Rate",
+      "source": "cancelled / (active + cancelled)",
+      "unit": "%",
+      "growthPct": null
+    },
+    "retentionRate": {
+      "value": 100,
+      "label": "Customer Retention Rate",
+      "source": "active / (active + cancelled)",
+      "unit": "%",
+      "growthPct": null
+    },
+    "totalAiWins": {
+      "value": 16,
+      "label": "Total AI Wins",
+      "source": "owner_success_events",
+      "growthPct": null,
+      "trend": "+15 today"
+    },
+    "runningCampaigns": {
+      "value": 50,
+      "label": "Running Campaigns",
+      "source": "campaigns.status IN ('sent','replied','interested','meeting')",
+      "growthPct": null
+    },
+    "completedCampaigns": {
+      "value": 2,
+      "label": "Completed Campaigns",
+      "source": "campaigns.status = 'deal'",
+      "growthPct": null
+    },
+    "failedCampaigns": {
+      "value": 0,
+      "label": "Failed Campaigns",
+      "source": "campaigns.status = 'lost'",
+      "growthPct": null
+    },
+    "aiMessagesSent": {
+      "value": 76,
+      "label": "Total AI Messages Sent",
+      "source": "messages (AI source heuristic)",
+      "growthPct": null
+    },
+    "totalReplies": {
+      "value": 34,
+      "label": "Total Replies",
+      "source": "messages.direction=inbound",
+      "growthPct": null
+    },
+    "meetingsBooked": {
+      "value": 6,
+      "label": "Meetings Booked",
+      "source": "campaigns.status='meeting'",
+      "growthPct": null
+    },
+    "dealsClosed": {
+      "value": 2,
+      "label": "Deals Closed",
+      "source": "campaigns.status='deal'",
+      "growthPct": null
+    },
+    "conversionFunnel": {
+      "value": 3.8,
+      "label": "Conversion Funnel",
+      "source": "leads + campaigns",
+      "unit": "%",
+      "funnel": {
+        "scraped": 487,
+        "qualified": 9,
+        "meetings": 6,
+        "deals": 2,
+        "stages": [
+          {
+            "key": "scraped",
+            "label": "Leads Scraped",
+            "value": 487
+          },
+          {
+            "key": "qualified",
+            "label": "Qualified",
+            "value": 9
+          },
+          {
+            "key": "meetings",
+            "label": "Meetings Booked",
+            "value": 6
+          },
+          {
+            "key": "deals",
+            "label": "Deals Closed",
+            "value": 2
+          }
+        ]
+      },
+      "growthPct": null
+    },
+    "overallAiHealthScore": {
+      "value": 39,
+      "label": "Overall AI Health Score",
+      "source": "openai probe + reply rate + conversion + avg AI win score",
+      "unit": "/100",
+      "breakdown": {
+        "openaiProbe": 0,
+        "database": 15,
+        "replySignal": 11,
+        "conversion": 1,
+        "winQuality": 12,
+        "avgAiScore": 7.7
+      },
+      "growthPct": null
+    }
+  },
+  "charts": {
+    "revenuePoints": 30,
+    "funnelStages": 4,
+    "campaignMix": [
+      {
+        "label": "Running",
+        "value": 50,
+        "color": "#38bdf8"
+      },
+      {
+        "label": "Completed",
+        "value": 2,
+        "color": "#34d399"
+      },
+      {
+        "label": "Failed",
+        "value": 0,
+        "color": "#fb7185"
+      }
+    ]
+  },
+  "ledgerTotals": {
+    "daily": 0,
+    "monthly": 0,
+    "yearly": 0,
+    "total": 0,
+    "paymentEvents": 0
+  },
+  "success": true
+}

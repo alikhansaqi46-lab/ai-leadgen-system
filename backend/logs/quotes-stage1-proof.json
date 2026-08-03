@@ -1,0 +1,95 @@
+{
+  "success": true,
+  "mode": "read-only + isolated-write-with-cleanup",
+  "isolatedWorkspace": "ws_quotes_verify_1785309281443",
+  "passed": 15,
+  "failed": 0,
+  "report": [
+    {
+      "name": "Schema ensureTables",
+      "status": "PASS",
+      "detail": "quotes_invoices.sql applied or already present"
+    },
+    {
+      "name": "Templates catalog",
+      "status": "PASS",
+      "detail": "corporate,modern,minimal,medical,construction,manufacturing,real_estate"
+    },
+    {
+      "name": "Quote statuses",
+      "status": "PASS",
+      "detail": "draft,sent,viewed,negotiating,accepted,rejected,expired,converted"
+    },
+    {
+      "name": "Invoice statuses",
+      "status": "PASS",
+      "detail": "draft,sent,paid,partially_paid,unpaid,overdue,cancelled"
+    },
+    {
+      "name": "computeTotals (read-only)",
+      "status": "PASS",
+      "detail": "{\"lineItems\":[{\"id\":\"li_1\",\"description\":\"Kit\",\"quantity\":20,\"unitPrice\":120,\"discount\":0,\"amount\":2400,\"unit\":\"\"}],\"subtotal\":2400,\"discountPct\":5,\"discountAmount\":120,\"taxPct\":0,\"taxAmount\":0,\"shipping\":0,\"total\":2280}"
+    },
+    {
+      "name": "Read-only list (prod workspace)",
+      "status": "PASS",
+      "detail": "workspace=default total=4 sample=4"
+    },
+    {
+      "name": "Read-only stats (prod workspace)",
+      "status": "PASS",
+      "detail": "{\"quotesTotal\":2,\"quotesDraft\":0,\"quotesSent\":0,\"quotesAccepted\":2,\"invoicesTotal\":2,\"invoicesUnpaid\":2,\"invoicesPaid\":0,\"quoteValue\":4620,\"invoiceValue\":4620,\"paidValue\":0}"
+    },
+    {
+      "name": "PDF generator (temp file)",
+      "status": "PASS",
+      "detail": "/uploads/tmp_pdf_1785309281984.pdf"
+    },
+    {
+      "name": "Isolated billing profile",
+      "status": "PASS",
+      "detail": "ws_quotes_verify_1785309281443"
+    },
+    {
+      "name": "Isolated quote create/totals",
+      "status": "PASS",
+      "detail": "qt_269f1d8a-7d0f-49ba-93ca-3285dace523e total=2280"
+    },
+    {
+      "name": "Isolated quote update",
+      "status": "PASS",
+      "detail": "items=2 total=2310"
+    },
+    {
+      "name": "Isolated convert quote→invoice",
+      "status": "PASS",
+      "detail": "QT-2026-0001 → INV-2026-0001"
+    },
+    {
+      "name": "Isolated timeline events",
+      "status": "PASS",
+      "detail": "4"
+    },
+    {
+      "name": "Prod workspace untouched check",
+      "status": "PASS",
+      "detail": "prod total still listed=4 (isolated writes under ws_quotes_verify_1785309281443)"
+    },
+    {
+      "name": "Cleanup complete",
+      "status": "PASS",
+      "detail": "deleted=2 leftover=0"
+    }
+  ],
+  "cleanup": [
+    {
+      "id": "qt_269f1d8a-7d0f-49ba-93ca-3285dace523e",
+      "deleted": true
+    },
+    {
+      "id": "inv_714ceb3c-3219-42bf-a044-1c5f2c543694",
+      "deleted": true
+    }
+  ],
+  "generatedAt": "2026-07-29T07:14:43.924Z"
+}

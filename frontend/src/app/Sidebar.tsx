@@ -1,5 +1,9 @@
-import { NavLink } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, Link } from 'react-router-dom';
+import Logo from '../components/Logo';
 import { NAV_GROUPS, FOOTER_ITEMS, NavItem } from './navigation';
+import { getOpenAiStatus } from '../lib/apiClient';
+import { useAuth } from '../features/auth/AuthContext';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -24,10 +28,33 @@ function Item({ item, collapsed, unreadInbox }: { item: NavItem; collapsed: bool
 }
 
 export default function Sidebar({ collapsed, unreadInbox = 0 }: SidebarProps) {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'super_admin';
+  const [aiUsage, setAiUsage] = useState<{ remaining: number; total: number } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getOpenAiStatus()
+      .then((s) => {
+        if (!active || !s) return;
+        setAiUsage({
+          remaining: Number(s.freeMessagesRemaining) || 0,
+          total: Number(s.freeMessagesTotal) || 0,
+        });
+      })
+      .catch(() => {
+        if (active) setAiUsage(null);
+      });
+    return () => { active = false; };
+  }, []);
+
+  const used = aiUsage ? Math.max(0, aiUsage.total - aiUsage.remaining) : 0;
+  const pct = aiUsage && aiUsage.total > 0 ? Math.min(100, Math.round((used / aiUsage.total) * 100)) : 0;
+
   return (
     <aside className={`lf-sidebar${collapsed ? ' is-collapsed' : ''}`}>
       <div className="lf-brand">
-        <span className="lf-brand-mark">LF</span>
+        <Logo size={collapsed ? 80 : 96} className="lf-brand-logo" />
         {!collapsed && <span className="lf-brand-name">LeadFlow AI</span>}
       </div>
 
@@ -46,11 +73,22 @@ export default function Sidebar({ collapsed, unreadInbox = 0 }: SidebarProps) {
         {FOOTER_ITEMS.map((item) => (
           <Item key={item.to} item={item} collapsed={collapsed} />
         ))}
-        {!collapsed && (
-          <div className="lf-usage" title="AI usage (placeholder until billing)">
-            <div className="lf-usage-label">AI replies</div>
-            <div className="lf-usage-bar"><span style={{ width: '0%' }} /></div>
-            <div className="lf-usage-meta">0 / 1,000</div>
+        {isSuperAdmin && (
+          <Link
+            to="/super-admin"
+            className="lf-nav-item"
+            title={collapsed ? 'Owner Console' : undefined}
+            style={{ opacity: 0.75 }}
+          >
+            <span className="lf-nav-icon" aria-hidden>◈</span>
+            {!collapsed && <span className="lf-nav-label">Owner Console</span>}
+          </Link>
+        )}
+        {!collapsed && aiUsage && (
+          <div className="lf-usage" title="Free AI message quota from your account">
+            <div className="lf-usage-label">AI messages</div>
+            <div className="lf-usage-bar"><span style={{ width: `${pct}%` }} /></div>
+            <div className="lf-usage-meta">{used.toLocaleString()} / {aiUsage.total.toLocaleString()}</div>
           </div>
         )}
       </div>

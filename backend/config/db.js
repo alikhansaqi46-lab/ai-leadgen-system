@@ -7,7 +7,10 @@
  *
  * SSL: enabled automatically for non-local hosts (Supabase requires SSL).
  * Override with PGSSL=disable / PGSSL=require.
+ * Certificate verification follows config/tls.js (TLS_INSECURE_ALLOW escape hatch).
  */
+
+const { getPgSslConfig } = require('./tls');
 
 let Pool;
 try {
@@ -18,14 +21,6 @@ try {
 }
 
 let pool = null;
-
-function shouldUseSsl(connectionString) {
-  const mode = (process.env.PGSSL || '').toLowerCase();
-  if (mode === 'disable' || mode === 'false') return false;
-  if (mode === 'require' || mode === 'true') return true;
-  // Auto: local connections don't need SSL; everything else does.
-  return !/@(localhost|127\.0\.0\.1)[:/]/.test(connectionString || '');
-}
 
 function getPool() {
   if (pool) return pool;
@@ -40,7 +35,7 @@ function getPool() {
 
   pool = new Pool({
     connectionString,
-    ssl: shouldUseSsl(connectionString) ? { rejectUnauthorized: false } : false,
+    ssl: getPgSslConfig(connectionString),
     max: parseInt(process.env.PG_POOL_MAX || '10', 10),
   });
 

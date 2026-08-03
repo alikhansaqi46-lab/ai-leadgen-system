@@ -2,9 +2,7 @@
 /**
  * Migrate existing leads into PostgreSQL.
  *
- * Sources:
- *   - File JSON (default): backend/data/leads.json
- *   - Firestore (optional): pass --from-firestore (requires Firebase env/creds)
+ * Source: File JSON (default backend/data/leads.json). Firestore import removed.
  *
  * Safety:
  *   - COPY-ONLY: never modifies or deletes the source data.
@@ -12,7 +10,7 @@
  *   - --dry-run: report what WOULD happen, write nothing.
  *
  * Usage:
- *   DATABASE_URL=postgres://... node scripts/migrate-json-to-postgres.js [--dry-run] [--from-firestore] [--file path]
+ *   DATABASE_URL=postgres://... node scripts/migrate-json-to-postgres.js [--dry-run] [--file path]
  */
 
 require('dotenv').config();
@@ -23,7 +21,10 @@ const { getPool } = require('../config/db');
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
-const FROM_FIRESTORE = args.includes('--from-firestore');
+if (args.includes('--from-firestore')) {
+  console.error('[ARCHIVED] --from-firestore removed. Migrate from JSON files only.');
+  process.exit(1);
+}
 const fileArgIdx = args.indexOf('--file');
 const FILE_PATH = fileArgIdx !== -1 && args[fileArgIdx + 1]
   ? path.resolve(args[fileArgIdx + 1])
@@ -39,16 +40,6 @@ function loadFromFile() {
   return Array.isArray(parsed) ? parsed : [];
 }
 
-async function loadFromFirestore() {
-  const { db } = require('../config/firebase');
-  if (!db) {
-    console.warn('[migrate] --from-firestore requested but Firestore is not configured.');
-    return [];
-  }
-  const snapshot = await db.collection('leads').get();
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-}
-
 function normalize(lead) {
   // Preserve existing id/createdAt; only fill if missing.
   const id = lead.id ? String(lead.id) : uuidv4();
@@ -62,11 +53,7 @@ async function main() {
     process.exit(1);
   }
 
-  let source = loadFromFile();
-  if (FROM_FIRESTORE) {
-    const fsLeads = await loadFromFirestore();
-    source = source.concat(fsLeads);
-  }
+  const source = loadFromFile();
 
   // De-dup by id within the source set (keep first occurrence).
   const byId = new Map();
@@ -76,7 +63,7 @@ async function main() {
   const leads = Array.from(byId.values());
 
   console.log(`[migrate] Source leads: ${source.length} (unique ids: ${leads.length})`);
-  console.log(`[migrate] Source file: ${FILE_PATH}${FROM_FIRESTORE ? ' + Firestore' : ''}`);
+  console.log(`[migrate] Source file: ${FILE_PATH}`);
 
   const pool = getPool();
 

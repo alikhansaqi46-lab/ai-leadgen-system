@@ -1,0 +1,95 @@
+{
+  "createdAt": "2026-07-29T02:33:03.957Z",
+  "users": [
+    {
+      "id": "usr_super_admin_1783323507243",
+      "fullName": "LeadFlow Admin",
+      "businessName": "LeadFlow AI",
+      "email": "leadflow.my@gmail.com",
+      "whatsappNumber": null,
+      "emailVerified": true,
+      "role": "super_admin",
+      "subscriptionStatus": "active",
+      "subscriptionPlan": "enterprise",
+      "subscriptionExpiresAt": null,
+      "openaiApiEnabled": false,
+      "openaiSource": "master",
+      "freeAiMessagesRemaining": 96,
+      "senderEmail": "leadflow.my@gmail.com",
+      "createdAt": "2026-07-06T07:38:27.538Z",
+      "lastLoginAt": "2026-07-26T09:18:31.472Z",
+      "lastLoginIp": "127.0.0.1",
+      "lastLoginUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "lastLoginCountry": null,
+      "accountStatus": "active",
+      "suspendedAt": null,
+      "suspendedReason": null
+    }
+  ],
+  "payments": [],
+  "expiry": [],
+  "audit": [
+    {
+      "id": "aud_d8277f83-cb2c-407c-8e26-436f27fc627c",
+      "actor_id": "usr_super_admin_1783323507243",
+      "actor_email": "leadflow.my@gmail.com",
+      "action": "maintenance.on",
+      "target_type": "system",
+      "target_id": null,
+      "details": {
+        "enabled": true,
+        "message": "System maintenance in progress",
+        "updatedAt": "2026-07-29T02:32:58.418Z"
+      },
+      "ip": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "created_at": "2026-07-29T02:32:58.465Z"
+    },
+    {
+      "id": "aud_dff47211-abd8-4cf7-b6f7-02535039aa4c",
+      "actor_id": "usr_super_admin_1783323507243",
+      "actor_email": "leadflow.my@gmail.com",
+      "action": "maintenance.off",
+      "target_type": "system",
+      "target_id": null,
+      "details": {
+        "enabled": false,
+        "message": "System maintenance in progress",
+        "updatedAt": "2026-07-29T02:32:53.454Z"
+      },
+      "ip": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "created_at": "2026-07-29T02:32:53.502Z"
+    },
+    {
+      "id": "aud_341c5ef8-ce65-4b2d-971e-498780204b6d",
+      "actor_id": "usr_super_admin_1783323507243",
+      "actor_email": "leadflow.my@gmail.com",
+      "action": "intelligence.scan",
+      "target_type": "system",
+      "target_id": null,
+      "details": {
+        "events": [],
+        "created": 0,
+        "scanned": 4
+      },
+      "ip": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "created_at": "2026-07-29T02:28:39.789Z"
+    },
+    {
+      "id": "aud_a53c6995-9d26-4c28-a199-be540b902346",
+      "actor_id": "usr_super_admin_1783323507243",
+      "actor_email": "leadflow.my@gmail.com",
+      "action": "notifications.refresh",
+      "target_type": "system",
+      "target_id": null,
+      "details": {
+        "count": 0
+      },
+      "ip": "127.0.0.1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "created_at": "2026-07-26T08:02:45.356Z"
+    }
+  ]
+}

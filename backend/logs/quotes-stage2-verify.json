@@ -1,0 +1,177 @@
+{
+  "stage": 2,
+  "isolatedWorkspace": "ws_quotes_verify_1785310218946",
+  "pass": 17,
+  "fail": 0,
+  "leftoverInIsolatedWs": 0,
+  "report": [
+    {
+      "name": "Schema + public_token",
+      "status": "PASS",
+      "detail": "ensureTables applied"
+    },
+    {
+      "name": "Billing profile",
+      "status": "PASS",
+      "detail": "ws_quotes_verify_1785310218946"
+    },
+    {
+      "name": "Manual quote totals",
+      "status": "PASS",
+      "detail": "total=1075"
+    },
+    {
+      "name": "CRM customer link",
+      "status": "PASS",
+      "detail": "leadId=452c9366-ada4-4093-b20e-acc5306c366a"
+    },
+    {
+      "name": "Duplicate",
+      "status": "PASS",
+      "detail": "QT-2026-0002"
+    },
+    {
+      "name": "Share link",
+      "status": "PASS",
+      "detail": "http://127.0.0.1:3000/share/quote/sh_6519a1b0106e48df99cd08ee0b772cd7"
+    },
+    {
+      "name": "Public share view",
+      "status": "PASS",
+      "detail": "status=viewed"
+    },
+    {
+      "name": "AI regenerate preserve customer",
+      "status": "PASS",
+      "detail": "customer unchanged"
+    },
+    {
+      "name": "Quote accepted",
+      "status": "PASS",
+      "detail": "accepted"
+    },
+    {
+      "name": "Quote → Invoice convert",
+      "status": "PASS",
+      "detail": "QT-2026-0001 → INV-2026-0001"
+    },
+    {
+      "name": "Invoice payment",
+      "status": "PASS",
+      "detail": "paid=1075"
+    },
+    {
+      "name": "PDF export",
+      "status": "PASS",
+      "detail": "inv_0174f8a2-fac2-4605-a438-2a171434ca09.pdf"
+    },
+    {
+      "name": "Multi-channel event tracking",
+      "status": "PASS",
+      "detail": "email,whatsapp,sms"
+    },
+    {
+      "name": "Sales pattern insights",
+      "status": "PASS",
+      "detail": "{\"templates\":1,\"channels\":4,\"funnel\":{\"draft\":1,\"sent\":0,\"viewed\":0,\"accepted\":1,\"converted\":1,\"paid\":1}}"
+    },
+    {
+      "name": "Invoice revenue analytics (excludes verify ws)",
+      "status": "PASS",
+      "detail": "{\"daily\":0,\"monthly\":0,\"yearly\":0,\"totalPaid\":0,\"unpaid\":0,\"overdue\":0,\"countPaid\":0,\"source\":\"sales_documents (paid invoices)\"}"
+    },
+    {
+      "name": "Executive KPIs include invoices",
+      "status": "PASS",
+      "detail": "admin_payment_events + sales_documents (paid invoices)"
+    },
+    {
+      "name": "Workspace dashboard invoice metrics",
+      "status": "PASS",
+      "detail": "{\"revenue\":1075,\"quotesSent\":0,\"invoicesPaid\":1}"
+    }
+  ],
+  "apiProof": {
+    "createQuote": {
+      "id": "qt_8e92dd9d-f4ad-4eec-944e-eee47f7a76f4",
+      "number": "QT-2026-0001",
+      "total": 1075
+    },
+    "crm": {
+      "leadId": "452c9366-ada4-4093-b20e-acc5306c366a",
+      "contactId": "31dd4805-2c4c-4204-a89c-339e27d42e76"
+    },
+    "share": {
+      "token": "sh_6519a1b0106e48df99cd08ee0b772cd7",
+      "shareUrl": "http://127.0.0.1:3000/share/quote/sh_6519a1b0106e48df99cd08ee0b772cd7"
+    },
+    "publicView": {
+      "status": "viewed",
+      "number": "QT-2026-0001"
+    },
+    "convert": {
+      "quote": "QT-2026-0001",
+      "invoice": "INV-2026-0001"
+    },
+    "payment": {
+      "status": "paid",
+      "amountPaid": 1075,
+      "paymentId": "pay_51b3fae8-815e-40dd-b641-8e703d4f8ffc"
+    },
+    "patterns": {
+      "templates": 1,
+      "channels": 4,
+      "funnel": {
+        "draft": 1,
+        "sent": 0,
+        "viewed": 0,
+        "accepted": 1,
+        "converted": 1,
+        "paid": 1
+      }
+    },
+    "invoiceRevenue": {
+      "daily": 0,
+      "monthly": 0,
+      "yearly": 0,
+      "totalPaid": 0,
+      "unpaid": 0,
+      "overdue": 0,
+      "countPaid": 0,
+      "source": "sales_documents (paid invoices)"
+    },
+    "executive": {
+      "revenueToday": 0,
+      "revenueSource": "admin_payment_events + sales_documents (paid invoices)",
+      "funnelStages": [
+        "scraped",
+        "qualified",
+        "quotes",
+        "accepted",
+        "meetings",
+        "paid",
+        "deals"
+      ]
+    },
+    "dashboard": {
+      "revenue": 1075,
+      "quotesSent": 0,
+      "invoicesPaid": 1
+    }
+  },
+  "cleanupReport": [
+    {
+      "id": "qt_8e92dd9d-f4ad-4eec-944e-eee47f7a76f4",
+      "deleted": true
+    },
+    {
+      "id": "qt_7b76d947-d889-4b9c-97dd-f3ecb090c961",
+      "deleted": true
+    },
+    {
+      "id": "inv_0174f8a2-fac2-4605-a438-2a171434ca09",
+      "deleted": true
+    }
+  ],
+  "generatedAt": "2026-07-29T07:30:33.445Z"
+}

@@ -1,0 +1,681 @@
+✅ Auth routes mounted at /api/auth
+✅ leads routes loaded
+✅ scrape routes mounted at /api/scrape
+✅ AI routes mounted at /api/ai
+✅ WhatsApp Meta API routes loaded
+✅ Campaign CRM routes mounted at /api/campaign
+✅ Email routes mounted at /api/email
+✅ Integration routes mounted at /api/integrations
+✅ SMS routes mounted at /api/sms
+✅ PayPal routes mounted at /api/paypal
+✅ Webhook routes mounted at /api/webhook
+✅ Settings routes mounted at /api/settings
+✅ OpenAI routes mounted at /api/openai
+✅ WhatsApp API configured (twilio)
+Server running on port 5001
+[Server] Code version: 2025-07-07-v3 (preview-fix+base64-wrap+reply-detection+relative-url+displayHtml+poll-all-workspaces)
+[EmailInbox] Starting IMAP polling every 60s
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 27 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 20 skipped
+2026-07-07T08:17:46.293Z - GET /api/debug/version
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 27 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 20 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 27 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 6 skipped
+2026-07-07T08:19:49.262Z - POST /api/campaign/send-with-preview
+[Campaign] previewMode=true, loading settings for userId: usr_super_admin_1783323507243
+[Campaign] Loaded previewSettings: {"smsPreview":false,"emailPreview":true,"previewEmail":"leadflow.my@gmail.com","previewPhone":"","whatsappPreview":false}
+[EmailService] sendEmailToLead: attachments param: [{"filename":"campaign-image.png","path":"http://localhost:5001/uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png","cid":"campaign-image@leadflow.ai"}]
+[EmailService] inlineImages HTML: <img src="cid:campaign-image@leadflow.ai" style="max-width:100%;border-radius:8px;margin-bottom:16px;" alt="" />
+[EmailService] imageAtt found: {
+  filename: 'campaign-image.png',
+  path: 'http://localhost:5001/uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png',
+  cid: 'campaign-image@leadflow.ai'
+}
+[EmailService] Converted absolute URL to relative: /uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png
+[EmailService] displayHtml built. Contains img src: true | src value: /uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png
+[EmailService] sendEmailToLead: calling sendViaGmailApi for workspace: usr_super_admin_1783323507243
+[GmailAPI] sendViaGmailApi called for workspace: usr_super_admin_1783323507243
+[GmailAPI] mailOptions.to: test-lead@leadflow.local
+[GmailAPI] mailOptions.subject: Final Test Campaign
+
+========== GMAIL CLIENT DIAGNOSTIC ==========
+[GmailClient] Workspace ID: usr_super_admin_1783323507243
+[GmailClient] Account: leadflow.my@gmail.com
+[GmailClient] Connected at: 2026-07-06T10:00:29.305Z
+[GmailClient] Updated at: 2026-07-07T07:47:53.422Z
+[GmailClient] Stored scope: https://mail.google.com/ openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile
+[GmailClient] Refresh token preview: 1//0gDCyO0s5jE0eCgYI...
+[GmailClient] Access token preview: ya29.a0AT3oNZ8yDLZkv4Q3WeXqCGX...
+[GmailClient] Expiry date: 2026-07-07T08:47:52.413Z
+[GmailClient] tokeninfo.scope: email profile https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid
+[GmailClient] tokeninfo.email: leadflow.my@gmail.com
+[GmailClient] ✅ Gmail client created for user: leadflow.my@gmail.com
+========== END GMAIL CLIENT DIAGNOSTIC ==========
+
+[GmailAPI] Gmail client created. User: leadflow.my@gmail.com
+[GmailAPI] Gmail profile: leadflow.my@gmail.com Messages: 65
+[GmailAPI] Attachments count: 1
+[GmailAPI] Processing attachment: campaign-image.png | cid: campaign-image@leadflow.ai | path: http://localhost:5001/uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png | hasContent: false | mime: image/png
+[GmailAPI] Fetching image from URL: http://localhost:5001/uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png
+2026-07-07T08:19:50.467Z - GET /uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png
+[GmailAPI] Image fetched. Size: 70 bytes | Base64 length: 96
+[GmailAPI] Raw message length: 934 Encoded length: 1246
+[GmailAPI] Calling gmail.users.messages.send...
+[GmailAPI] ✅ Send successful! Message ID: 19f3ba97db152c77 Thread ID: 19f3ba97db152c77
+[EmailService] sendViaGmailApi succeeded. Message ID: 19f3ba97db152c77
+[EmailService] RETURNING html length: 197 | displayHtml length: 216 | displayHtml has img: true
+[unifiedSend] Building richMetadata. result.displayHtml? true | result.html? true
+[unifiedSend] richMetadata.html length: 216 | has img: true
+[unifiedSend] Storing message in conv: 43e906d5-8f11-4cb3-8694-59b82ef6e799 | metadata has html? true | metadata html length: 216
+[Campaign] Preview send check: {
+  previewMode: true,
+  previewSent: false,
+  previewSettingsExists: true,
+  channel: 'email'
+}
+[Campaign] Preview send condition PASSED. previewSettings: {"smsPreview":false,"emailPreview":true,"previewEmail":"leadflow.my@gmail.com","previewPhone":"","whatsappPreview":false}
+[Campaign] previewAttachments: [{"filename":"campaign-image.png","path":"http://localhost:5001/uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png","cid":"campaign-image@leadflow.ai"}] | html passed: true | subject passed: true
+[PreviewSend] sendPreviewCopy invoked: {
+  channel: 'email',
+  hasPreviewSettings: true,
+  workspaceId: 'usr_super_admin_1783323507243',
+  userId: 'usr_super_admin_1783323507243',
+  hasHtml: true,
+  hasSubject: true,
+  attachmentsCount: 1
+}
+[PreviewSend] shouldPreview: true | channel: email | settings: {"whatsappPreview":false,"emailPreview":true,"smsPreview":false}
+[PreviewSend] Looking up user by id: usr_super_admin_1783323507243
+[PreviewSend] Resolved preview destination: {
+  channel: 'email',
+  previewEmail: 'leadflow.my@gmail.com',
+  previewPhone: '',
+  lookupId: 'usr_super_admin_1783323507243',
+  userFound: true
+}
+[PreviewSend] Sending preview email via Gmail API to: leadflow.my@gmail.com | from: leadflow.my@gmail.com | attachments count: 1
+[PreviewSend] previewHtml length: 736 | contains img: true
+[GmailAPI] sendViaGmailApi called for workspace: usr_super_admin_1783323507243
+[GmailAPI] mailOptions.to: leadflow.my@gmail.com
+[GmailAPI] mailOptions.subject: [Preview] Final Test Campaign — sent to Test Lead
+
+========== GMAIL CLIENT DIAGNOSTIC ==========
+[GmailClient] Workspace ID: usr_super_admin_1783323507243
+[GmailClient] Account: leadflow.my@gmail.com
+[GmailClient] Connected at: 2026-07-06T10:00:29.305Z
+[GmailClient] Updated at: 2026-07-07T07:47:53.422Z
+[GmailClient] Stored scope: https://mail.google.com/ openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile
+[GmailClient] Refresh token preview: 1//0gDCyO0s5jE0eCgYI...
+[GmailClient] Access token preview: ya29.a0AT3oNZ8yDLZkv4Q3WeXqCGX...
+[GmailClient] Expiry date: 2026-07-07T08:47:52.413Z
+[GmailClient] tokeninfo.scope: email profile https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid
+[GmailClient] tokeninfo.email: leadflow.my@gmail.com
+[GmailClient] ✅ Gmail client created for user: leadflow.my@gmail.com
+========== END GMAIL CLIENT DIAGNOSTIC ==========
+
+[GmailAPI] Gmail client created. User: leadflow.my@gmail.com
+[GmailAPI] Gmail profile: leadflow.my@gmail.com Messages: 66
+[GmailAPI] Attachments count: 1
+[GmailAPI] Processing attachment: campaign-image.png | cid: campaign-image@leadflow.ai | path: http://localhost:5001/uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png | hasContent: false | mime: image/png
+[GmailAPI] Fetching image from URL: http://localhost:5001/uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png
+2026-07-07T08:19:52.182Z - GET /uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png
+[GmailAPI] Image fetched. Size: 70 bytes | Base64 length: 96
+[GmailAPI] Raw message length: 1555 Encoded length: 2082
+[GmailAPI] Calling gmail.users.messages.send...
+[GmailAPI] ✅ Send successful! Message ID: 19f3ba98274ff446 Thread ID: 19f3ba98274ff446
+[PreviewSend] Gmail API SUCCESS. result: {"messageId":"19f3ba98274ff446","bounced":false}
+[Campaign] previewResult received: {"sent":true,"messageId":"19f3ba98274ff446","conversationId":"38b17c22-79bb-46dd-a807-d2569e244fd2","channel":"email"}
+[Campaign] previewSent set to: true
+2026-07-07T08:20:06.400Z - GET /api/debug/conversation/38b17c22-79bb-46dd-a807-d2569e244fd2/raw
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 29 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 29 skipped
+2026-07-07T08:20:42.391Z - GET /api/debug/conversation/43e906d5-8f11-4cb3-8694-59b82ef6e799/raw
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 29 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 29 skipped
+2026-07-07T08:22:04.776Z - POST /api/leads/bulk-delete
+[LeadStorage] Deleted leads from Postgres (workspace usr_super_admin_1783323507243)
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+2026-07-07T08:22:17.606Z - GET /api/debug/version
+[EmailInbox] Found 29 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 29 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 29 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 29 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 29 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 28 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 29 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 29 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 29 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 29 skipped
+2026-07-07T08:27:06.740Z - GET /api/auth/me
+2026-07-07T08:27:06.767Z - GET /favicon.ico
+[Auth] Returning user profile for: leadflow.my@gmail.com with WhatsApp number: null
+2026-07-07T08:27:07.074Z - GET /api/auth/me
+[Auth] Returning user profile for: leadflow.my@gmail.com with WhatsApp number: null
+2026-07-07T08:27:08.671Z - GET /favicon.ico
+2026-07-07T08:27:12.010Z - POST /api/auth/login
+2026-07-07T08:27:12.448Z - GET /api/leads
+2026-07-07T08:27:12.450Z - GET /api/leads/filters
+2026-07-07T08:27:12.451Z - GET /api/ai/scores
+2026-07-07T08:27:12.660Z - GET /api/openai/status
+2026-07-07T08:27:12.746Z - GET /api/campaign/stats
+2026-07-07T08:27:12.748Z - GET /api/campaign/channel-stats
+2026-07-07T08:27:12.749Z - GET /api/leads
+2026-07-07T08:27:12.751Z - GET /favicon.ico
+2026-07-07T08:27:12.779Z - GET /api/openai/status
+2026-07-07T08:27:12.997Z - GET /api/leads/filters
+2026-07-07T08:27:13.113Z - GET /api/campaign/channel-stats
+2026-07-07T08:27:13.162Z - GET /api/ai/scores
+2026-07-07T08:27:13.163Z - GET /api/campaign/stats
+2026-07-07T08:27:15.925Z - GET /api/ai/conversations
+2026-07-07T08:27:15.931Z - GET /favicon.ico
+2026-07-07T08:27:16.429Z - POST /api/email/sync
+2026-07-07T08:27:16.593Z - GET /api/ai/conversations
+2026-07-07T08:27:16.611Z - POST /api/ai/conversations/38b17c22-79bb-46dd-a807-d2569e244fd2/read
+2026-07-07T08:27:16.612Z - GET /api/email/templates
+2026-07-07T08:27:16.613Z - GET /api/ai/conversations/38b17c22-79bb-46dd-a807-d2569e244fd2/messages
+2026-07-07T08:27:16.615Z - GET /api/ai/conversations/38b17c22-79bb-46dd-a807-d2569e244fd2/timeline
+2026-07-07T08:27:16.693Z - GET /api/openai/status
+2026-07-07T08:27:16.769Z - POST /api/ai/conversations/38b17c22-79bb-46dd-a807-d2569e244fd2/read
+2026-07-07T08:27:16.777Z - GET /api/email/templates
+2026-07-07T08:27:16.819Z - GET /api/ai/conversations/38b17c22-79bb-46dd-a807-d2569e244fd2/timeline
+2026-07-07T08:27:16.820Z - GET /api/openai/status
+2026-07-07T08:27:16.854Z - GET /api/ai/conversations/38b17c22-79bb-46dd-a807-d2569e244fd2/messages
+2026-07-07T08:27:17.151Z - GET /uploads/80186865-9291-49c1-93f6-c0ad678d9efc.png
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 29 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Found 29 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 4 skipped
+2026-07-07T08:27:21.299Z - GET /api/leads
+2026-07-07T08:27:21.300Z - GET /api/leads/filters
+2026-07-07T08:27:21.302Z - GET /api/ai/scores
+2026-07-07T08:27:21.308Z - GET /api/leads
+2026-07-07T08:27:21.314Z - GET /favicon.ico
+2026-07-07T08:27:21.419Z - GET /api/leads
+2026-07-07T08:27:21.422Z - GET /api/leads/filters
+2026-07-07T08:27:21.457Z - GET /api/ai/scores
+2026-07-07T08:27:21.545Z - GET /api/leads/filters
+2026-07-07T08:27:21.596Z - GET /api/ai/scores
+2026-07-07T08:27:47.725Z - GET /favicon.ico
+2026-07-07T08:27:47.733Z - GET /api/email/status
+2026-07-07T08:27:47.735Z - GET /api/leads
+2026-07-07T08:27:47.736Z - GET /api/ai/scores
+2026-07-07T08:27:47.737Z - GET /api/campaign/leads
+2026-07-07T08:27:47.738Z - GET /api/integrations/email
+2026-07-07T08:27:47.739Z - GET /api/settings/preview
+2026-07-07T08:27:48.046Z - GET /api/campaign/stats
+2026-07-07T08:27:48.125Z - GET /api/integrations/email
+2026-07-07T08:27:48.127Z - GET /api/email/status
+2026-07-07T08:27:48.194Z - GET /api/settings/preview
+2026-07-07T08:27:48.294Z - GET /api/leads
+2026-07-07T08:27:48.318Z - GET /api/campaign/stats
+2026-07-07T08:27:48.323Z - GET /api/campaign/leads
+2026-07-07T08:27:48.482Z - GET /api/campaign/leads
+2026-07-07T08:27:48.572Z - GET /api/ai/scores
+2026-07-07T08:27:48.630Z - GET /api/campaign/leads
+2026-07-07T08:28:03.100Z - POST /api/ai/generate-message
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+2026-07-07T08:28:18.247Z - POST /api/ai/generate-message
+[EmailInbox] Found 29 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 26 skipped
+2026-07-07T08:28:36.966Z - POST /api/upload-image
+[Upload] success: a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg image/jpeg 112.3KB
+2026-07-07T08:29:05.626Z - POST /api/campaign/send-with-preview
+[Campaign] previewMode=true, loading settings for userId: usr_super_admin_1783323507243
+[Campaign] Loaded previewSettings: {"smsPreview":false,"emailPreview":true,"previewEmail":"leadflow.my@gmail.com","previewPhone":"","whatsappPreview":false}
+[EmailService] sendEmailToLead: attachments param: [{"filename":"campaign-image.png","path":"http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg","cid":"campaign-image@leadflow.ai"}]
+[EmailService] inlineImages HTML: <img src="cid:campaign-image@leadflow.ai" style="max-width:100%;border-radius:8px;margin-bottom:16px;" alt="" />
+[EmailService] imageAtt found: {
+  filename: 'campaign-image.png',
+  path: 'http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg',
+  cid: 'campaign-image@leadflow.ai'
+}
+[EmailService] Converted absolute URL to relative: /uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+[EmailService] displayHtml built. Contains img src: true | src value: /uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+[EmailService] sendEmailToLead: calling sendViaGmailApi for workspace: usr_super_admin_1783323507243
+[GmailAPI] sendViaGmailApi called for workspace: usr_super_admin_1783323507243
+[GmailAPI] mailOptions.to: info@centredent.com
+[GmailAPI] mailOptions.subject: Outreach
+
+========== GMAIL CLIENT DIAGNOSTIC ==========
+[GmailClient] Workspace ID: usr_super_admin_1783323507243
+[GmailClient] Account: leadflow.my@gmail.com
+[GmailClient] Connected at: 2026-07-06T10:00:29.305Z
+[GmailClient] Updated at: 2026-07-07T07:47:53.422Z
+[GmailClient] Stored scope: https://mail.google.com/ openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile
+[GmailClient] Refresh token preview: 1//0gDCyO0s5jE0eCgYI...
+[GmailClient] Access token preview: ya29.a0AT3oNZ8yDLZkv4Q3WeXqCGX...
+[GmailClient] Expiry date: 2026-07-07T08:47:52.413Z
+[GmailClient] tokeninfo.scope: email profile https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid
+[GmailClient] tokeninfo.email: leadflow.my@gmail.com
+[GmailClient] ✅ Gmail client created for user: leadflow.my@gmail.com
+========== END GMAIL CLIENT DIAGNOSTIC ==========
+
+[GmailAPI] Gmail client created. User: leadflow.my@gmail.com
+[GmailAPI] Gmail profile: leadflow.my@gmail.com Messages: 68
+[GmailAPI] Attachments count: 1
+[GmailAPI] Processing attachment: campaign-image.png | cid: campaign-image@leadflow.ai | path: http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg | hasContent: false | mime: image/png
+[GmailAPI] Fetching image from URL: http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+2026-07-07T08:29:07.009Z - GET /uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+[GmailAPI] Image fetched. Size: 114996 bytes | Base64 length: 153328
+[GmailAPI] Raw message length: 158648 Encoded length: 211536
+[GmailAPI] Calling gmail.users.messages.send...
+[GmailAPI] ✅ Send successful! Message ID: 19f3bb1fcc008fe3 Thread ID: 19f3bb1fcc008fe3
+[EmailService] sendViaGmailApi succeeded. Message ID: 19f3bb1fcc008fe3
+[EmailService] RETURNING html length: 667 | displayHtml length: 687 | displayHtml has img: true
+[unifiedSend] Building richMetadata. result.displayHtml? true | result.html? true
+[unifiedSend] richMetadata.html length: 687 | has img: true
+[unifiedSend] Storing message in conv: a7fd40eb-7802-42d6-9022-a9abf43c5a08 | metadata has html? true | metadata html length: 687
+[Campaign] Preview send check: {
+  previewMode: true,
+  previewSent: false,
+  previewSettingsExists: true,
+  channel: 'email'
+}
+[Campaign] Preview send condition PASSED. previewSettings: {"smsPreview":false,"emailPreview":true,"previewEmail":"leadflow.my@gmail.com","previewPhone":"","whatsappPreview":false}
+[Campaign] previewAttachments: [{"filename":"campaign-image.png","path":"http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg","cid":"campaign-image@leadflow.ai"}] | html passed: true | subject passed: true
+[PreviewSend] sendPreviewCopy invoked: {
+  channel: 'email',
+  hasPreviewSettings: true,
+  workspaceId: 'usr_super_admin_1783323507243',
+  userId: 'usr_super_admin_1783323507243',
+  hasHtml: true,
+  hasSubject: true,
+  attachmentsCount: 1
+}
+[PreviewSend] shouldPreview: true | channel: email | settings: {"whatsappPreview":false,"emailPreview":true,"smsPreview":false}
+[PreviewSend] Looking up user by id: usr_super_admin_1783323507243
+[PreviewSend] Resolved preview destination: {
+  channel: 'email',
+  previewEmail: 'leadflow.my@gmail.com',
+  previewPhone: '',
+  lookupId: 'usr_super_admin_1783323507243',
+  userFound: true
+}
+[PreviewSend] Sending preview email via Gmail API to: leadflow.my@gmail.com | from: leadflow.my@gmail.com | attachments count: 1
+[PreviewSend] previewHtml length: 1210 | contains img: true
+[GmailAPI] sendViaGmailApi called for workspace: usr_super_admin_1783323507243
+[GmailAPI] mailOptions.to: leadflow.my@gmail.com
+[GmailAPI] mailOptions.subject: [Preview] Outreach — sent to Centre Dental/中央牙科
+
+========== GMAIL CLIENT DIAGNOSTIC ==========
+[GmailClient] Workspace ID: usr_super_admin_1783323507243
+[GmailClient] Account: leadflow.my@gmail.com
+[GmailClient] Connected at: 2026-07-06T10:00:29.305Z
+[GmailClient] Updated at: 2026-07-07T07:47:53.422Z
+[GmailClient] Stored scope: https://mail.google.com/ openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile
+[GmailClient] Refresh token preview: 1//0gDCyO0s5jE0eCgYI...
+[GmailClient] Access token preview: ya29.a0AT3oNZ8yDLZkv4Q3WeXqCGX...
+[GmailClient] Expiry date: 2026-07-07T08:47:52.413Z
+[GmailClient] tokeninfo.scope: email profile https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid
+[GmailClient] tokeninfo.email: leadflow.my@gmail.com
+[GmailClient] ✅ Gmail client created for user: leadflow.my@gmail.com
+========== END GMAIL CLIENT DIAGNOSTIC ==========
+
+[GmailAPI] Gmail client created. User: leadflow.my@gmail.com
+[GmailAPI] Gmail profile: leadflow.my@gmail.com Messages: 69
+[GmailAPI] Attachments count: 1
+[GmailAPI] Processing attachment: campaign-image.png | cid: campaign-image@leadflow.ai | path: http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg | hasContent: false | mime: image/png
+[GmailAPI] Fetching image from URL: http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+2026-07-07T08:29:09.658Z - GET /uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+[GmailAPI] Image fetched. Size: 114996 bytes | Base64 length: 153328
+[GmailAPI] Raw message length: 159295 Encoded length: 212428
+[GmailAPI] Calling gmail.users.messages.send...
+[GmailAPI] ✅ Send successful! Message ID: 19f3bb20515d3f44 Thread ID: 19f3bb20515d3f44
+[PreviewSend] Gmail API SUCCESS. result: {"messageId":"19f3bb20515d3f44","bounced":false}
+[Campaign] previewResult received: {"sent":true,"messageId":"19f3bb20515d3f44","conversationId":"38b17c22-79bb-46dd-a807-d2569e244fd2","channel":"email"}
+[Campaign] previewSent set to: true
+[EmailService] sendEmailToLead: attachments param: [{"filename":"campaign-image.png","path":"http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg","cid":"campaign-image@leadflow.ai"}]
+[EmailService] inlineImages HTML: <img src="cid:campaign-image@leadflow.ai" style="max-width:100%;border-radius:8px;margin-bottom:16px;" alt="" />
+[EmailService] imageAtt found: {
+  filename: 'campaign-image.png',
+  path: 'http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg',
+  cid: 'campaign-image@leadflow.ai'
+}
+[EmailService] Converted absolute URL to relative: /uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+[EmailService] displayHtml built. Contains img src: true | src value: /uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+[EmailService] sendEmailToLead: calling sendViaGmailApi for workspace: usr_super_admin_1783323507243
+[GmailAPI] sendViaGmailApi called for workspace: usr_super_admin_1783323507243
+[GmailAPI] mailOptions.to: info@advanceddentalartsnyc.com
+[GmailAPI] mailOptions.subject: Outreach
+
+========== GMAIL CLIENT DIAGNOSTIC ==========
+[GmailClient] Workspace ID: usr_super_admin_1783323507243
+[GmailClient] Account: leadflow.my@gmail.com
+[GmailClient] Connected at: 2026-07-06T10:00:29.305Z
+[GmailClient] Updated at: 2026-07-07T07:47:53.422Z
+[GmailClient] Stored scope: https://mail.google.com/ openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile
+[GmailClient] Refresh token preview: 1//0gDCyO0s5jE0eCgYI...
+[GmailClient] Access token preview: ya29.a0AT3oNZ8yDLZkv4Q3WeXqCGX...
+[GmailClient] Expiry date: 2026-07-07T08:47:52.413Z
+[GmailClient] tokeninfo.scope: email profile https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid
+[GmailClient] tokeninfo.email: leadflow.my@gmail.com
+[GmailClient] ✅ Gmail client created for user: leadflow.my@gmail.com
+========== END GMAIL CLIENT DIAGNOSTIC ==========
+
+[GmailAPI] Gmail client created. User: leadflow.my@gmail.com
+[GmailAPI] Gmail profile: leadflow.my@gmail.com Messages: 70
+[GmailAPI] Attachments count: 1
+[GmailAPI] Processing attachment: campaign-image.png | cid: campaign-image@leadflow.ai | path: http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg | hasContent: false | mime: image/png
+[GmailAPI] Fetching image from URL: http://localhost:5001/uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+2026-07-07T08:29:13.162Z - GET /uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+[GmailAPI] Image fetched. Size: 114996 bytes | Base64 length: 153328
+[GmailAPI] Raw message length: 158663 Encoded length: 211556
+[GmailAPI] Calling gmail.users.messages.send...
+[GmailAPI] ✅ Send successful! Message ID: 19f3bb213ae8fd60 Thread ID: 19f3bb213ae8fd60
+[EmailService] sendViaGmailApi succeeded. Message ID: 19f3bb213ae8fd60
+[EmailService] RETURNING html length: 667 | displayHtml length: 687 | displayHtml has img: true
+[unifiedSend] Building richMetadata. result.displayHtml? true | result.html? true
+[unifiedSend] richMetadata.html length: 687 | has img: true
+[unifiedSend] Storing message in conv: dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86 | metadata has html? true | metadata html length: 687
+[Campaign] Preview send check: {
+  previewMode: true,
+  previewSent: true,
+  previewSettingsExists: true,
+  channel: 'email'
+}
+[Campaign] Preview send SKIPPED. Condition result: { previewMode: true, previewSent: true, hasPreviewSettings: true }
+2026-07-07T08:29:14.767Z - GET /api/campaign/stats
+2026-07-07T08:29:14.889Z - GET /api/campaign/leads
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 30 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 30 skipped
+2026-07-07T08:29:34.337Z - GET /api/ai/conversations
+2026-07-07T08:29:34.657Z - GET /favicon.ico
+2026-07-07T08:29:34.833Z - POST /api/email/sync
+2026-07-07T08:29:35.445Z - GET /api/ai/conversations
+2026-07-07T08:29:35.467Z - GET /api/email/templates
+2026-07-07T08:29:35.533Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:29:35.715Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:29:35.767Z - POST /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/read
+2026-07-07T08:29:35.769Z - POST /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/read
+2026-07-07T08:29:35.771Z - GET /api/email/templates
+2026-07-07T08:29:35.810Z - GET /api/openai/status
+2026-07-07T08:29:35.834Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:29:35.870Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:29:35.871Z - GET /api/openai/status
+2026-07-07T08:29:35.891Z - GET /uploads/a6e325b4-74c8-475a-b7cd-f49dca1f3da6.jpeg
+[EmailInbox] Found 30 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+2026-07-07T08:29:44.663Z - GET /api/ai/conversations
+2026-07-07T08:29:45.473Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:29:45.476Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:29:54.655Z - GET /api/ai/conversations
+2026-07-07T08:29:55.480Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:29:55.481Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:30:04.659Z - GET /api/ai/conversations
+2026-07-07T08:30:05.465Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:30:05.474Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:30:14.663Z - GET /api/ai/conversations
+2026-07-07T08:30:15.469Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:30:15.470Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 30 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 10 skipped
+2026-07-07T08:30:24.656Z - GET /api/ai/conversations
+2026-07-07T08:30:25.468Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:30:25.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:30:34.661Z - GET /api/ai/conversations
+2026-07-07T08:30:35.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:30:35.474Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:30:44.653Z - GET /api/ai/conversations
+2026-07-07T08:30:45.466Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:30:45.469Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:30:54.655Z - GET /api/ai/conversations
+2026-07-07T08:30:55.467Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:30:55.469Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:31:04.655Z - GET /api/ai/conversations
+2026-07-07T08:31:05.481Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:31:05.490Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:31:14.656Z - GET /api/ai/conversations
+2026-07-07T08:31:15.470Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:31:15.479Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 30 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 22 skipped
+2026-07-07T08:31:24.663Z - GET /api/ai/conversations
+2026-07-07T08:31:25.469Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:31:25.471Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:31:34.662Z - GET /api/ai/conversations
+2026-07-07T08:31:35.471Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:31:35.482Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:31:44.649Z - GET /api/ai/conversations
+2026-07-07T08:31:45.481Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:31:45.490Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:31:54.656Z - GET /api/ai/conversations
+2026-07-07T08:31:55.466Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:31:55.641Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:32:04.343Z - GET /api/ai/conversations
+2026-07-07T08:32:05.478Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:32:05.481Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:32:14.345Z - GET /api/ai/conversations
+2026-07-07T08:32:15.479Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:32:15.630Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 30 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 30 skipped
+2026-07-07T08:32:24.339Z - GET /api/ai/conversations
+2026-07-07T08:32:25.477Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:32:25.481Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:32:34.356Z - GET /api/ai/conversations
+2026-07-07T08:32:35.469Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:32:35.657Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:32:44.345Z - GET /api/ai/conversations
+2026-07-07T08:32:45.476Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:32:45.478Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:32:54.650Z - GET /api/ai/conversations
+2026-07-07T08:32:55.470Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:32:55.474Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:33:04.663Z - GET /api/ai/conversations
+2026-07-07T08:33:05.469Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:33:05.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:33:14.659Z - GET /api/ai/conversations
+2026-07-07T08:33:15.470Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:33:15.479Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 30 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 26 skipped
+2026-07-07T08:33:24.656Z - GET /api/ai/conversations
+2026-07-07T08:33:25.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:33:25.476Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:33:34.660Z - GET /api/ai/conversations
+2026-07-07T08:33:35.465Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:33:35.468Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:33:44.648Z - GET /api/ai/conversations
+2026-07-07T08:33:45.477Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:33:45.480Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:33:54.656Z - GET /api/ai/conversations
+2026-07-07T08:33:55.467Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:33:55.470Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:34:04.658Z - GET /api/ai/conversations
+2026-07-07T08:34:05.481Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:34:05.491Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:34:14.652Z - GET /api/ai/conversations
+2026-07-07T08:34:15.477Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:34:15.486Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 30 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 4 skipped
+2026-07-07T08:34:24.656Z - GET /api/ai/conversations
+2026-07-07T08:34:25.469Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:34:25.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:34:34.656Z - GET /api/ai/conversations
+2026-07-07T08:34:35.466Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:34:35.469Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:34:44.651Z - GET /api/ai/conversations
+2026-07-07T08:34:45.477Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:34:45.488Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:34:54.647Z - GET /api/ai/conversations
+2026-07-07T08:34:55.475Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:34:55.476Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:35:04.652Z - GET /api/ai/conversations
+2026-07-07T08:35:05.474Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:35:05.483Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:35:14.660Z - GET /api/ai/conversations
+2026-07-07T08:35:15.475Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:35:15.484Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 30 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 4 skipped
+2026-07-07T08:35:24.651Z - GET /api/ai/conversations
+2026-07-07T08:35:25.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:35:25.475Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:35:34.655Z - GET /api/ai/conversations
+2026-07-07T08:35:35.481Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:35:35.490Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:35:44.660Z - GET /api/ai/conversations
+2026-07-07T08:35:45.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:35:45.482Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:35:54.659Z - GET /api/ai/conversations
+2026-07-07T08:35:55.470Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:35:55.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:36:04.662Z - GET /api/ai/conversations
+2026-07-07T08:36:05.471Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:36:05.475Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:36:14.645Z - GET /api/ai/conversations
+2026-07-07T08:36:15.473Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:36:15.649Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 30 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 30 skipped
+2026-07-07T08:36:24.341Z - GET /api/ai/conversations
+2026-07-07T08:36:25.480Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:36:25.482Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:36:34.343Z - GET /api/ai/conversations
+2026-07-07T08:36:35.791Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:36:35.793Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:36:44.655Z - GET /api/ai/conversations
+2026-07-07T08:36:45.470Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:36:45.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:36:54.657Z - GET /api/ai/conversations
+2026-07-07T08:36:55.480Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:36:55.617Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:37:04.343Z - GET /api/ai/conversations
+2026-07-07T08:37:05.474Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:37:05.483Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:37:14.348Z - GET /api/ai/conversations
+2026-07-07T08:37:15.480Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:37:15.751Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 30 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+2026-07-07T08:37:24.334Z - GET /api/ai/conversations
+2026-07-07T08:37:25.474Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:37:25.483Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:37:45.090Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:37:46.937Z - GET /api/ai/conversations
+2026-07-07T08:37:46.939Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:37:46.940Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:37:47.556Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:37:51.281Z - GET /api/ai/conversations
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 30 skipped
+2026-07-07T08:37:54.342Z - GET /api/ai/conversations
+2026-07-07T08:37:55.481Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:37:55.788Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:38:04.353Z - GET /api/ai/conversations
+2026-07-07T08:38:05.475Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:38:05.782Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:38:14.351Z - GET /api/ai/conversations
+2026-07-07T08:38:15.467Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:38:15.470Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 31 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 26 skipped
+2026-07-07T08:38:24.353Z - GET /api/ai/conversations
+2026-07-07T08:38:25.471Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:38:25.700Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:38:34.353Z - GET /api/ai/conversations
+2026-07-07T08:38:35.470Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:38:35.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:38:44.349Z - GET /api/ai/conversations
+2026-07-07T08:38:45.466Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:38:45.639Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:38:54.352Z - GET /api/ai/conversations
+2026-07-07T08:38:55.469Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:38:55.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:39:04.355Z - GET /api/ai/conversations
+2026-07-07T08:39:05.475Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:39:05.623Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:39:14.349Z - GET /api/ai/conversations
+2026-07-07T08:39:15.473Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:39:15.482Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 31 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 30 skipped
+2026-07-07T08:39:24.341Z - GET /api/ai/conversations
+2026-07-07T08:39:25.476Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:39:25.713Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:39:34.354Z - GET /api/ai/conversations
+2026-07-07T08:39:35.476Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:39:35.486Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:39:44.351Z - GET /api/ai/conversations
+2026-07-07T08:39:45.475Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:39:45.754Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:39:54.346Z - GET /api/ai/conversations
+2026-07-07T08:39:55.461Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:39:55.462Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:40:04.349Z - GET /api/ai/conversations
+2026-07-07T08:40:05.481Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:40:05.706Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:40:14.347Z - GET /api/ai/conversations
+2026-07-07T08:40:15.481Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:40:15.490Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 31 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 12 skipped
+2026-07-07T08:40:24.344Z - GET /api/ai/conversations
+2026-07-07T08:40:25.476Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:40:25.650Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:40:34.347Z - GET /api/ai/conversations
+2026-07-07T08:40:35.470Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:40:35.472Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:40:44.344Z - GET /api/ai/conversations
+2026-07-07T08:40:45.485Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:40:45.621Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:40:54.343Z - GET /api/ai/conversations
+2026-07-07T08:40:55.480Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:40:55.491Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:41:04.349Z - GET /api/ai/conversations
+2026-07-07T08:41:05.475Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:41:05.757Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+2026-07-07T08:41:14.341Z - GET /api/ai/conversations
+2026-07-07T08:41:15.476Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:41:15.477Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 31 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 26 skipped
+2026-07-07T08:41:24.354Z - GET /api/ai/conversations
+2026-07-07T08:41:25.474Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/messages
+2026-07-07T08:41:25.651Z - GET /api/ai/conversations/dfe4b8df-a3d6-4354-8ab0-f0ea5d452d86/timeline
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 31 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 30 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 31 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 30 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 31 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 31 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 31 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 31 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 31 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 30 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Found 31 email(s) since Tue, 30 Jun 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 30 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]

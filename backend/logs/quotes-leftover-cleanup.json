@@ -1,0 +1,44 @@
+{
+  "success": true,
+  "workspace": "default",
+  "removedCount": 4,
+  "removed": [
+    {
+      "id": "qt_0a30e4c9-541d-4aaa-b1ae-b534adffff0f",
+      "number": "QT-2026-0001",
+      "docType": "quote",
+      "companyName": "LeadFlow Verify Co",
+      "notes": "Stage 1 verification quote",
+      "deleted": true
+    },
+    {
+      "id": "inv_a1edfb36-f408-4fc4-933b-b2b664eca473",
+      "number": "INV-2026-0001",
+      "docType": "invoice",
+      "companyName": "LeadFlow Verify Co",
+      "notes": "Stage 1 verification quote",
+      "deleted": true
+    },
+    {
+      "id": "qt_98581868-da8e-4e38-bedf-982eac62f41e",
+      "number": "QT-2026-0002",
+      "docType": "quote",
+      "companyName": "LeadFlow Verify Co",
+      "notes": "Stage 1 verification quote",
+      "deleted": true
+    },
+    {
+      "id": "inv_39ed33f2-5aae-4ce2-ba72-e8b2bcdc6012",
+      "number": "INV-2026-0002",
+      "docType": "invoice",
+      "companyName": "LeadFlow Verify Co",
+      "notes": "Stage 1 verification quote",
+      "deleted": true
+    }
+  ],
+  "remainingTotal": 0,
+  "remainingIds": [],
+  "leftoverVerifyCount": 0,
+  "leftoverVerifyIds": [],
+  "generatedAt": "2026-07-29T07:19:53.734Z"
+}

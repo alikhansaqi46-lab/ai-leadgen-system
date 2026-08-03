@@ -1,25 +1,14 @@
-import React, { Suspense } from 'react';
-import { AUTH_MODE } from './authConfig';
-
 /**
- * S2 AuthGate — provider-abstracted authentication wrapper.
+ * AuthGate - passthrough for the custom AuthProvider flow.
  *
- * AUTH_MODE=disabled (default): renders children directly. No login, no token,
- * and (thanks to lazy loading) the Supabase client is never bundled — identical
- * to pre-S2 behavior.
+ * Login / signup / verify-email / forgot-password are owned by
+ * frontend/src/features/auth (AuthContext -> POST /api/auth/*).
+ * Do not wrap those pages in SupabaseGate; that path conflicts with the
+ * working custom JWT auth against public.users.
  *
- * AUTH_MODE=supabase: lazily loads the Supabase session gate.
+ * SupabaseGate.jsx remains in the repo for optional S2 experiments but is
+ * not mounted here.
  */
-const SupabaseGate = React.lazy(() => import('./SupabaseGate'));
-
 export default function AuthGate({ children }) {
-  if (AUTH_MODE === 'supabase') {
-    return (
-      <Suspense fallback={<div style={{ padding: 40, fontFamily: 'sans-serif' }}>Loading…</div>}>
-        <SupabaseGate>{children}</SupabaseGate>
-      </Suspense>
-    );
-  }
-  // disabled (default) and any unknown mode → no-op gate.
   return children;
 }

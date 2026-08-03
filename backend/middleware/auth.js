@@ -22,6 +22,7 @@
 
 const jwt = require('jsonwebtoken');
 const { createRemoteJWKSet, jwtVerify } = require('jose');
+const userStorage = require('../utils/userStorage');
 
 const DEFAULT_WORKSPACE_ID = process.env.DEFAULT_WORKSPACE_ID || 'default';
 
@@ -65,25 +66,64 @@ function getJwks(url) {
   return set;
 }
 
+function clearAuthCaches() {
+  const before = jwksCache.size;
+  jwksCache.clear();
+  return { jwksEntriesCleared: before };
+}
+
+async function applySessionGate(req, payload, user) {
+  const sessionService = require('../services/sessionService');
+  const sessionId = payload.sid || null;
+  const check = await sessionService.validateSession(sessionId, user);
+  if (!check.ok) {
+    const err = new Error(check.reason || 'Session expired');
+    err.status = 401;
+    err.code = 'SESSION_EXPIRED';
+    throw err;
+  }
+  if (sessionId && !check.legacy) {
+    const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || null;
+    const userAgent = req.headers['user-agent'] || null;
+    await sessionService.touchSession(sessionId, { ip, userAgent }).catch(() => null);
+  }
+  return sessionId;
+}
+
 /** Verify a token according to AUTH_MODE. Returns the decoded payload. Async. */
 async function verifyToken(token) {
   const mode = authMode();
 
   if (mode === 'supabase') {
-    // Prefer asymmetric JWKS verification (current Supabase default).
+    // 1) Custom LeadFlow HS256 tokens from POST /api/auth/login (primary path for this app).
+    const localSecret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || process.env.DEV_AUTH_SECRET;
+    if (localSecret) {
+      try {
+        return jwt.verify(token, localSecret, { algorithms: ['HS256'] });
+      } catch (hsErr) {
+        if (!/expired|invalid signature|jwt malformed/i.test(hsErr.message || '')) {
+          // Not a custom token — try Supabase JWKS below.
+        } else {
+          throw hsErr;
+        }
+      }
+    }
+    // 2) Supabase Auth asymmetric JWKS (optional S2 path).
     const jwksUrl = supabaseJwksUrl();
     if (jwksUrl) {
-      const { payload } = await jwtVerify(token, getJwks(jwksUrl), {
-        algorithms: ['ES256', 'RS256'],
-      });
-      return payload;
+      try {
+        const { payload } = await jwtVerify(token, getJwks(jwksUrl), {
+          algorithms: ['ES256', 'RS256'],
+        });
+        return payload;
+      } catch (jwksErr) {
+        const msg = (jwksErr && jwksErr.message) || String(jwksErr);
+        if (/certificate|TLS|fetch|network|ENOTFOUND|ECONNREFUSED/i.test(msg)) {
+          console.error('[Auth] Supabase JWKS unreachable — check --use-system-ca / TLS trust:', msg);
+        }
+      }
     }
-    // Fall back to legacy symmetric HS256 secret (older projects).
-    const secret = process.env.SUPABASE_JWT_SECRET;
-    if (secret) {
-      return jwt.verify(token, secret, { algorithms: ['HS256'] });
-    }
-    throw new Error('AUTH_MODE=supabase requires SUPABASE_URL (JWKS) or SUPABASE_JWT_SECRET');
+    throw new Error('AUTH_MODE=supabase requires a valid LeadFlow JWT or Supabase JWT');
   }
 
   if (mode === 'dev') {
@@ -92,8 +132,14 @@ async function verifyToken(token) {
     return jwt.verify(token, secret, { algorithms: ['HS256'] });
   }
 
+  if (mode === 'local') {
+    const secret = process.env.JWT_SECRET || process.env.DEV_AUTH_SECRET;
+    if (!secret) throw new Error('AUTH_MODE=local requires JWT_SECRET or DEV_AUTH_SECRET');
+    return jwt.verify(token, secret, { algorithms: ['HS256'] });
+  }
+
   if (mode === 'clerk') {
-    throw new Error('AUTH_MODE=clerk is not implemented (use supabase or dev)');
+    throw new Error('AUTH_MODE=clerk is not implemented (use supabase, dev, or local)');
   }
 
   throw new Error(`Unknown AUTH_MODE: ${mode}`);
@@ -119,14 +165,89 @@ async function requireAuth(req, res, next) {
 
   try {
     const payload = await verifyToken(token);
+    const userId = payload.sub || payload.user_id || null;
+    const user = userId ? await userStorage.findById(userId).catch(() => null) : null;
+    const sessionId = await applySessionGate(req, payload, user);
     req.auth = {
-      userId: payload.sub || payload.user_id || null,
+      userId,
       workspaceId: workspaceFromClaims(payload),
+      sessionId,
+      role: user?.role || payload.role || 'subscriber',
     };
     return next();
   } catch (err) {
     console.error('[Auth] Token verification failed:', err.message);
-    return res.status(401).json({ error: 'Unauthorized', message: 'Invalid token' });
+    const status = err.status || 401;
+    return res.status(status).json({
+      error: 'Unauthorized',
+      message: err.code === 'SESSION_EXPIRED' ? err.message : 'Invalid token',
+      code: err.code || undefined,
+    });
+  }
+}
+
+/**
+ * Express middleware. Requires valid token AND verified email.
+ * Returns 403 if token is valid but email is not verified.
+ */
+async function requireEmailVerified(req, res, next) {
+  const mode = authMode();
+
+  if (mode === 'disabled') {
+    req.auth = { userId: DEFAULT_WORKSPACE_ID, workspaceId: DEFAULT_WORKSPACE_ID };
+    return next();
+  }
+
+  const token = getBearerToken(req);
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized', message: 'Missing Bearer token' });
+  }
+
+  try {
+    const payload = await verifyToken(token);
+    const userId = payload.sub || payload.user_id || null;
+
+    // Check if user's email is verified
+    const user = await userStorage.findById(userId);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized', message: 'User not found' });
+    }
+
+    const sessionId = await applySessionGate(req, payload, user);
+
+    // Super admins bypass email verification requirement
+    const role = user.role || 'subscriber';
+    if (role === 'super_admin') {
+      req.auth = {
+        userId,
+        workspaceId: workspaceFromClaims(payload),
+        role,
+        emailVerified: true,
+        sessionId,
+      };
+      return next();
+    }
+
+    if (!user.email_verified) {
+      return res.status(403).json({ error: 'Email verification required.' });
+    }
+
+    req.auth = {
+      userId,
+      workspaceId: workspaceFromClaims(payload),
+      role: user.role || 'subscriber',
+      emailVerified: user.email_verified,
+      sessionId,
+    };
+    return next();
+  } catch (err) {
+    console.error('[Auth] Token verification failed:', err.message);
+    const status = err.status || 401;
+    return res.status(status).json({
+      error: err.status === 401 ? 'Unauthorized' : 'Unauthorized',
+      message: err.code === 'SESSION_EXPIRED' ? err.message : 'Invalid token',
+      code: err.code || undefined,
+    });
   }
 }
 
@@ -142,4 +263,4 @@ async function resolveWorkspaceOptional(req) {
   }
 }
 
-module.exports = { requireAuth, resolveWorkspaceOptional, DEFAULT_WORKSPACE_ID };
+module.exports = { requireAuth, requireEmailVerified, resolveWorkspaceOptional, DEFAULT_WORKSPACE_ID, clearAuthCaches };

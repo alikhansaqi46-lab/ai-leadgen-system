@@ -1,0 +1,89 @@
+%PDF-1.4
+1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj
+2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj
+3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>endobj
+4 0 obj<< /Length 908 >>stream
+BT
+/F1 10 Tf
+50 800 Td
+12 TL
+(Company) Tj
+T*
+() Tj
+T*
+(INVOICE) Tj
+T*
+(No: INV-2026-0001) Tj
+T*
+(Status: PAID) Tj
+T*
+(Date: 7/29/2026) Tj
+T*
+(Due: 8/12/2026) Tj
+T*
+() Tj
+T*
+(Bill To) Tj
+T*
+(E2E Stage2 Dental 20260729154221) Tj
+T*
+(E2E Stage2 Contact 20260729154221) Tj
+T*
+(e2e.stage2.20260729154221@example.invalid) Tj
+T*
+(+601112223333) Tj
+T*
+(Kuala Lumpur, Malaysia) Tj
+T*
+() Tj
+T*
+(Items) Tj
+T*
+(------------------------------------------------) Tj
+T*
+(Dental Whitening Kit) Tj
+T*
+(  20 x MYR 55.00 = MYR 1100.00) Tj
+T*
+(------------------------------------------------) Tj
+T*
+(Subtotal: MYR 1100.00) Tj
+T*
+(Tax \(6%\): MYR 66.00) Tj
+T*
+(Shipping: MYR 15.00) Tj
+T*
+(TOTAL: MYR 1181.00) Tj
+T*
+() Tj
+T*
+(Notes) Tj
+T*
+(ISOLATED_E2E_STAGE2_DELETE_ME ? Manual edit: 12-month warranty. This product comes with a profe) Tj
+T*
+() Tj
+T*
+(Terms) Tj
+T*
+(Net 14) Tj
+T*
+() Tj
+T*
+(Thank you for your business.) Tj
+T*
+ET
+endstream
+endobj
+5 0 obj<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000056 00000 n 
+0000000111 00000 n 
+0000000235 00000 n 
+0000001192 00000 n 
+trailer<< /Size 6 /Root 1 0 R >>
+startxref
+1260
+%%EOF

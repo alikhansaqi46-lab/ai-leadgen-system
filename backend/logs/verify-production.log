@@ -1,0 +1,19 @@
+✅ Auth routes mounted at /api/auth
+✅ leads routes loaded
+✅ contacts routes loaded
+✅ scrape routes mounted at /api/scrape
+✅ AI routes mounted at /api/ai
+✅ WhatsApp Meta API routes loaded
+✅ Campaign CRM routes mounted at /api/campaign
+✅ Email routes mounted at /api/email
+✅ Integration routes mounted at /api/integrations
+✅ SMS routes mounted at /api/sms
+✅ PayPal routes mounted at /api/paypal
+✅ Webhook routes mounted at /api/webhook
+✅ Settings routes mounted at /api/settings
+✅ OpenAI routes mounted at /api/openai
+✅ WhatsApp API configured (twilio)
+Server running on port 5001
+[Server] Code version: 2026-07-08-gmail-production (inbox session-only, no startup Gmail API)
+2026-07-08T08:21:28.622Z - POST /api/email/inbox/session/start
+2026-07-08T08:21:33.712Z - POST /api/email/inbox/session/stop

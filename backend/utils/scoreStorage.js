@@ -3,13 +3,12 @@
  *
  * Stores AI qualification scores, one row per (workspace, lead), upserted on
  * re-qualify. Uses the SAME pluggable driver dispatch as leadStorage.js
- * (selected by STORAGE_DRIVER): 'postgres' | 'firestore' | 'json' | 'auto'.
+ * (selected by STORAGE_DRIVER): 'postgres' | 'json' | 'auto'.
  *
  * Every method is workspace-scoped so scores honor the S2 isolation model and
  * are ready for Supabase activation without changes.
  */
 
-const { db } = require('../config/firebase');
 const { query } = require('../config/db');
 const fs = require('fs');
 const path = require('path');
@@ -22,10 +21,8 @@ const DEFAULT_WORKSPACE_ID = process.env.DEFAULT_WORKSPACE_ID || 'default';
 function resolveDriver() {
   const d = (process.env.STORAGE_DRIVER || 'auto').toLowerCase();
   if (d === 'postgres' || d === 'pg') return 'postgres';
-  if (d === 'firestore') return 'firestore';
   if (d === 'json' || d === 'file') return 'json';
-  // 'auto' (default): preserve legacy behavior exactly (Firestore if configured, else JSON).
-  return db ? 'firestore' : 'json';
+  return process.env.DATABASE_URL ? 'postgres' : 'json';
 }
 
 /* ==================== FILE HELPERS ==================== */
@@ -91,21 +88,7 @@ const scoreStorage = {
         model: r.model,
         createdAt: r.created_at,
       }));
-    }
-
-    if (driver === 'firestore') {
-      try {
-        const snap = await db
-          .collection('lead_scores')
-          .where('workspaceId', '==', workspaceId)
-          .get();
-        return snap.docs.map((d) => d.data());
-      } catch (err) {
-        console.error('[ScoreStorage] Firestore get failed, falling back to file:', err.message);
-      }
-    }
-
-    return loadFromFile().filter(
+    }return loadFromFile().filter(
       (r) => (r.workspaceId || DEFAULT_WORKSPACE_ID) === workspaceId
     );
   },
@@ -134,24 +117,7 @@ const scoreStorage = {
         );
       }
       return rows;
-    }
-
-    if (driver === 'firestore') {
-      try {
-        const batch = db.batch();
-        for (const r of rows) {
-          // Deterministic doc id enforces one-score-per-(workspace,lead).
-          const ref = db.collection('lead_scores').doc(`${workspaceId}__${r.leadId}`);
-          batch.set(ref, r);
-        }
-        await batch.commit();
-        return rows;
-      } catch (err) {
-        console.error('[ScoreStorage] Firestore upsert failed, falling back to file:', err.message);
-      }
-    }
-
-    // File driver: replace this workspace's rows for the given leads, keep others intact.
+    }// File driver: replace this workspace's rows for the given leads, keep others intact.
     const all = loadFromFile();
     const incomingLeadIds = new Set(rows.map((r) => r.leadId));
     const kept = all.filter(
@@ -178,22 +144,7 @@ const scoreStorage = {
         [workspaceId, ids]
       );
       return;
-    }
-
-    if (driver === 'firestore') {
-      try {
-        const batch = db.batch();
-        for (const id of ids) {
-          batch.delete(db.collection('lead_scores').doc(`${workspaceId}__${id}`));
-        }
-        await batch.commit();
-        return;
-      } catch (err) {
-        console.error('[ScoreStorage] Firestore delete failed, falling back to file:', err.message);
-      }
-    }
-
-    const all = loadFromFile();
+    }const all = loadFromFile();
     const idSet = new Set(ids);
     const filtered = all.filter(
       (r) =>

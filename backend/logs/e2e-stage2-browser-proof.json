@@ -1,0 +1,154 @@
+{
+  "docs": [],
+  "timelineCount": 0,
+  "timelineSample": [],
+  "ownerSuccessEvents": [
+    {
+      "id": "ose_78cfd4e3-98a5-478d-a200-c56144e31079",
+      "event_type": "quote_viewed",
+      "title": "invoice quote_viewed — INV-2026-0001",
+      "revenue": "0.00",
+      "channel": "multi",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "created_at": "2026-07-29T07:55:17.827Z"
+    },
+    {
+      "id": "ose_34e6e252-17b4-4459-a3be-8742114d0454",
+      "event_type": "invoice_paid",
+      "title": "Invoice paid — INV-2026-0001",
+      "revenue": "1181.00",
+      "channel": "manual",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "created_at": "2026-07-29T07:52:58.890Z"
+    },
+    {
+      "id": "ose_a87cdc02-2aa3-467b-8c43-f1b0b9ec5146",
+      "event_type": "invoice_generated",
+      "title": "invoice invoice_generated — INV-2026-0001",
+      "revenue": "0.00",
+      "channel": "multi",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "created_at": "2026-07-29T07:52:20.530Z"
+    },
+    {
+      "id": "ose_55a27ad5-67f3-422c-908a-4203db89e069",
+      "event_type": "quote_accepted",
+      "title": "Quotation accepted — QT-2026-0001",
+      "revenue": "1181.00",
+      "channel": "multi",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "created_at": "2026-07-29T07:52:15.748Z"
+    }
+  ],
+  "patterns": {
+    "funnel": {
+      "draft": 0,
+      "sent": 0,
+      "viewed": 0,
+      "accepted": 1,
+      "converted": 1,
+      "paid": 1
+    },
+    "templates": [
+      {
+        "key": "corporate",
+        "wins": 2,
+        "total": 2,
+        "winRate": 100,
+        "avgDeal": 1181,
+        "revenue": 2362
+      }
+    ],
+    "channels": [
+      {
+        "key": "manual",
+        "wins": 0,
+        "signals": 0,
+        "winRate": 0
+      }
+    ],
+    "avgDeal": 1181
+  },
+  "invoiceRevenue": {
+    "daily": 1181,
+    "monthly": 1181,
+    "yearly": 1181,
+    "totalPaid": 1181,
+    "unpaid": 0,
+    "overdue": 0,
+    "countPaid": 1,
+    "source": "sales_documents (paid invoices)"
+  },
+  "executive": {
+    "revenueToday": {
+      "value": 1181,
+      "label": "Total Revenue Today",
+      "source": "admin_payment_events + sales_documents (paid invoices)",
+      "saas": 0,
+      "invoices": 1181,
+      "growthPct": null
+    },
+    "revenueMonth": {
+      "value": 1181,
+      "label": "Total Revenue This Month",
+      "source": "admin_payment_events + sales_documents (paid invoices)",
+      "saas": 0,
+      "invoices": 1181,
+      "growthPct": 0
+    },
+    "funnelStages": [
+      {
+        "key": "scraped",
+        "label": "Leads Scraped",
+        "value": 490
+      },
+      {
+        "key": "qualified",
+        "label": "Qualified",
+        "value": 9
+      },
+      {
+        "key": "quotes",
+        "label": "Quotes Sent",
+        "value": 0
+      },
+      {
+        "key": "accepted",
+        "label": "Quotes Accepted",
+        "value": 1
+      },
+      {
+        "key": "meetings",
+        "label": "Meetings Booked",
+        "value": 6
+      },
+      {
+        "key": "paid",
+        "label": "Invoices Paid",
+        "value": 1
+      },
+      {
+        "key": "deals",
+        "label": "Deals Closed",
+        "value": 2
+      }
+    ],
+    "totalAiWins": 20,
+    "aiHealth": 63
+  },
+  "dashboard": {
+    "revenue": 0,
+    "quotesSent": 0,
+    "quotesAccepted": 0,
+    "invoicesPaid": 0,
+    "invoicePaidValue": 0
+  },
+  "shareProbe": {
+    "ok": true,
+    "number": "INV-2026-0001",
+    "status": "paid",
+    "total": 1181
+  },
+  "corsFix": "PATCH added to CORS methods during E2E",
+  "generatedAt": "2026-07-29T07:55:46.852Z"
+}

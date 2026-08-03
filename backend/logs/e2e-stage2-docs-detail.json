@@ -1,0 +1,302 @@
+{
+  "workspaceId": "usr_super_admin_1783323507243",
+  "docs": [
+    {
+      "id": "qt_6442c7ba-b25e-4d65-bfae-71b13f34d7ef",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "number": "QT-2026-0001",
+      "doc_type": "quote",
+      "status": "converted",
+      "total": "1181.00",
+      "amount_paid": "0.00",
+      "lead_id": "b48103a9-2d5c-4c81-873b-a419ff525f9a",
+      "public_token": null,
+      "customer": {
+        "name": "E2E Stage2 Contact 20260729154221",
+        "email": "e2e.stage2.20260729154221@example.invalid",
+        "phone": "+601112223333",
+        "address": "Kuala Lumpur, Malaysia",
+        "company": "E2E Stage2 Dental 20260729154221"
+      }
+    },
+    {
+      "id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "number": "INV-2026-0001",
+      "doc_type": "invoice",
+      "status": "paid",
+      "total": "1181.00",
+      "amount_paid": "1181.00",
+      "lead_id": "b48103a9-2d5c-4c81-873b-a419ff525f9a",
+      "public_token": "sh_929513e196cf4b28a3ef4cc8b2e52248",
+      "customer": {
+        "name": "E2E Stage2 Contact 20260729154221",
+        "email": "e2e.stage2.20260729154221@example.invalid",
+        "phone": "+601112223333",
+        "address": "Kuala Lumpur, Malaysia",
+        "company": "E2E Stage2 Dental 20260729154221"
+      }
+    }
+  ],
+  "events": [
+    {
+      "document_id": "qt_6442c7ba-b25e-4d65-bfae-71b13f34d7ef",
+      "event_type": "created",
+      "channel": null,
+      "created_at": "2026-07-29T07:43:45.478Z"
+    },
+    {
+      "document_id": "qt_6442c7ba-b25e-4d65-bfae-71b13f34d7ef",
+      "event_type": "updated",
+      "channel": null,
+      "created_at": "2026-07-29T07:49:38.001Z"
+    },
+    {
+      "document_id": "qt_6442c7ba-b25e-4d65-bfae-71b13f34d7ef",
+      "event_type": "ai_regenerated",
+      "channel": null,
+      "created_at": "2026-07-29T07:50:43.927Z"
+    },
+    {
+      "document_id": "qt_6442c7ba-b25e-4d65-bfae-71b13f34d7ef",
+      "event_type": "customer_linked",
+      "channel": null,
+      "created_at": "2026-07-29T07:51:59.855Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "created",
+      "channel": null,
+      "created_at": "2026-07-29T07:52:15.361Z"
+    },
+    {
+      "document_id": "qt_6442c7ba-b25e-4d65-bfae-71b13f34d7ef",
+      "event_type": "converted_to_invoice",
+      "channel": null,
+      "created_at": "2026-07-29T07:52:15.557Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "created_from_quote",
+      "channel": null,
+      "created_at": "2026-07-29T07:52:15.604Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "payment_recorded",
+      "channel": "manual",
+      "created_at": "2026-07-29T07:52:58.850Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "pdf_exported",
+      "channel": null,
+      "created_at": "2026-07-29T07:53:35.096Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "share_link_created",
+      "channel": null,
+      "created_at": "2026-07-29T07:53:51.265Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "share_link_created",
+      "channel": null,
+      "created_at": "2026-07-29T07:54:11.598Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "pdf_exported",
+      "channel": null,
+      "created_at": "2026-07-29T07:54:11.803Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "share_link_created",
+      "channel": null,
+      "created_at": "2026-07-29T07:54:27.565Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "pdf_exported",
+      "channel": null,
+      "created_at": "2026-07-29T07:54:27.802Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "share_link_created",
+      "channel": null,
+      "created_at": "2026-07-29T07:54:42.732Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "pdf_exported",
+      "channel": null,
+      "created_at": "2026-07-29T07:54:42.948Z"
+    },
+    {
+      "document_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "event_type": "viewed_via_share",
+      "channel": null,
+      "created_at": "2026-07-29T07:55:17.790Z"
+    }
+  ],
+  "payments": [
+    {
+      "id": "pay_add7c11a-bf08-4053-b953-8a19a551f0fb",
+      "invoice_id": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "amount": "1181.00",
+      "currency": "MYR",
+      "method": "manual",
+      "status": "completed",
+      "external_id": null,
+      "paid_at": "2026-07-29T07:52:58.691Z",
+      "meta": {
+        "note": ""
+      },
+      "created_at": "2026-07-29T07:52:58.691Z"
+    }
+  ],
+  "leadTimeline": [
+    {
+      "id": "2457328a-83b3-436e-a6ff-0b97580e8e35",
+      "leadId": "b48103a9-2d5c-4c81-873b-a419ff525f9a",
+      "workspaceId": "usr_super_admin_1783323507243",
+      "type": "ai_action",
+      "channel": null,
+      "conversationId": null,
+      "referenceId": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "payload": {
+        "total": 1181,
+        "action": "quote_viewed",
+        "number": "INV-2026-0001",
+        "status": "paid",
+        "docType": "invoice",
+        "journey": true
+      },
+      "createdAt": "2026-07-29T07:55:23.866Z"
+    },
+    {
+      "id": "87733d1a-195f-448a-956a-ab1537185819",
+      "leadId": "b48103a9-2d5c-4c81-873b-a419ff525f9a",
+      "workspaceId": "usr_super_admin_1783323507243",
+      "type": "status_changed",
+      "channel": "manual",
+      "conversationId": null,
+      "referenceId": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "payload": {
+        "total": 1181,
+        "action": "invoice_paid",
+        "number": "INV-2026-0001",
+        "status": "paid",
+        "docType": "invoice",
+        "journey": true
+      },
+      "createdAt": "2026-07-29T07:53:03.796Z"
+    },
+    {
+      "id": "c619fc19-8d93-4163-9dbf-67cbfa9f5825",
+      "leadId": "b48103a9-2d5c-4c81-873b-a419ff525f9a",
+      "workspaceId": "usr_super_admin_1783323507243",
+      "type": "ai_action",
+      "channel": null,
+      "conversationId": null,
+      "referenceId": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "payload": {
+        "total": 1181,
+        "action": "invoice_generated",
+        "number": "INV-2026-0001",
+        "status": "draft",
+        "docType": "invoice",
+        "journey": true
+      },
+      "createdAt": "2026-07-29T07:52:25.692Z"
+    },
+    {
+      "id": "fc19f023-0018-4451-9eb2-0a0d95852e19",
+      "leadId": "b48103a9-2d5c-4c81-873b-a419ff525f9a",
+      "workspaceId": "usr_super_admin_1783323507243",
+      "type": "ai_action",
+      "channel": null,
+      "conversationId": null,
+      "referenceId": "qt_6442c7ba-b25e-4d65-bfae-71b13f34d7ef",
+      "payload": {
+        "total": 1181,
+        "action": "quote_accepted",
+        "number": "QT-2026-0001",
+        "status": "converted",
+        "docType": "quote",
+        "journey": true
+      },
+      "createdAt": "2026-07-29T07:52:20.490Z"
+    },
+    {
+      "id": "6790fd1b-3677-46f4-9e2d-a36bdebe04f9",
+      "leadId": "b48103a9-2d5c-4c81-873b-a419ff525f9a",
+      "workspaceId": "usr_super_admin_1783323507243",
+      "type": "ai_action",
+      "channel": null,
+      "conversationId": null,
+      "referenceId": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126",
+      "payload": {
+        "action": "invoice_from_quote",
+        "number": "INV-2026-0001",
+        "quoteId": "qt_6442c7ba-b25e-4d65-bfae-71b13f34d7ef",
+        "invoiceId": "inv_139f5b88-9ee1-48c6-8e51-79d4c22bd126"
+      },
+      "createdAt": "2026-07-29T07:52:15.643Z"
+    }
+  ],
+  "stats": {
+    "quotesTotal": 1,
+    "quotesDraft": 0,
+    "quotesSent": 0,
+    "quotesAccepted": 1,
+    "invoicesTotal": 1,
+    "invoicesUnpaid": 0,
+    "invoicesPaid": 1,
+    "quoteValue": 1181,
+    "invoiceValue": 1181,
+    "paidValue": 1181
+  },
+  "ose": [
+    {
+      "id": "ose_78cfd4e3-98a5-478d-a200-c56144e31079",
+      "event_type": "quote_viewed",
+      "title": "invoice quote_viewed — INV-2026-0001",
+      "revenue": "0.00",
+      "channel": "multi",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "created_at": "2026-07-29T07:55:17.827Z"
+    },
+    {
+      "id": "ose_34e6e252-17b4-4459-a3be-8742114d0454",
+      "event_type": "invoice_paid",
+      "title": "Invoice paid — INV-2026-0001",
+      "revenue": "1181.00",
+      "channel": "manual",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "created_at": "2026-07-29T07:52:58.890Z"
+    },
+    {
+      "id": "ose_a87cdc02-2aa3-467b-8c43-f1b0b9ec5146",
+      "event_type": "invoice_generated",
+      "title": "invoice invoice_generated — INV-2026-0001",
+      "revenue": "0.00",
+      "channel": "multi",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "created_at": "2026-07-29T07:52:20.530Z"
+    },
+    {
+      "id": "ose_55a27ad5-67f3-422c-908a-4203db89e069",
+      "event_type": "quote_accepted",
+      "title": "Quotation accepted — QT-2026-0001",
+      "revenue": "1181.00",
+      "channel": "multi",
+      "workspace_id": "usr_super_admin_1783323507243",
+      "created_at": "2026-07-29T07:52:15.748Z"
+    }
+  ]
+}

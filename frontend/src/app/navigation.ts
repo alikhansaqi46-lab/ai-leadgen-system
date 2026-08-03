@@ -21,8 +21,9 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     heading: 'Capture',
     items: [
+      { label: 'Contacts', to: '/app/contacts', icon: '◎' },
       { label: 'Leads', to: '/app/leads', icon: '◎' },
-      { label: 'Scraper', to: '/app/scraper', icon: '⌕' },
+      { label: 'Campaign', to: '/app/scraper', icon: '⌁' },
     ],
   },
   {
@@ -31,15 +32,28 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Inbox', to: '/app/inbox', icon: '✉', badge: 'inbox' },
       { label: 'WhatsApp', to: '/app/whatsapp', icon: '◉' },
       { label: 'Email', to: '/app/email', icon: '@' },
-      { label: 'AI Agent', to: '/app/ai-agent', icon: '✦' },
+      { label: 'SMS', to: '/app/sms', icon: '✆' },
+    ],
+  },
+  {
+    heading: 'AI Agent',
+    items: [
+      { label: 'WhatsApp Brain', to: '/app/ai/whatsapp-brain', icon: '◉' },
+      { label: 'Email Brain', to: '/app/ai/email-brain', icon: '@' },
+      { label: 'SMS Brain', to: '/app/ai/sms-brain', icon: '✆' },
     ],
   },
   {
     heading: 'Automate',
-    items: [{ label: 'Automations', to: '/app/automations', icon: '⚙' }],
+    items: [
+      { label: 'Automations', to: '/app/automations', icon: '⚙' },
+      { label: 'Reports', to: '/app/reports', icon: '▦' },
+    ],
   },
 ];
 
 export const FOOTER_ITEMS: NavItem[] = [
   { label: 'Settings', to: '/app/settings', icon: '⚙' },
+  { label: 'Subscription', to: '/app/settings/subscription', icon: '♕' },
+  { label: 'Account', to: '/app/account', icon: '◕' },
 ];

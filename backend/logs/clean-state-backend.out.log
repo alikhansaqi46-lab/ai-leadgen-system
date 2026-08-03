@@ -1,0 +1,156 @@
+✅ Auth routes mounted at /api/auth
+✅ leads routes loaded
+✅ contacts routes loaded
+✅ scrape routes mounted at /api/scrape
+✅ AI routes mounted at /api/ai
+✅ WhatsApp Meta API routes loaded
+✅ Campaign CRM routes mounted at /api/campaign
+✅ Email routes mounted at /api/email
+✅ Integration routes mounted at /api/integrations
+✅ SMS routes mounted at /api/sms
+✅ PayPal routes mounted at /api/paypal
+✅ Webhook routes mounted at /api/webhook
+✅ Settings routes mounted at /api/settings
+✅ OpenAI routes mounted at /api/openai
+✅ WhatsApp API configured (twilio)
+Server running on port 5001
+[Server] Code version: 2025-07-07-v3 (preview-fix+base64-wrap+reply-detection+relative-url+displayHtml+poll-all-workspaces)
+[EmailInbox] Starting inbox polling every 120s (Gmail sync max 15 messages, low-priority queued API calls)
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[GmailQueue:leadflow.my@gmail.com] task queued {"operation":"inbox.sync","priority":"low","highPending":0,"lowPending":1,"queuedTotal":1}
+[GmailQueue:leadflow.my@gmail.com] task started {"operation":"inbox.sync","priority":"low","highPending":0,"lowPending":0}
+[GmailAPI] call {"endpoint":"messages.list","accountKey":"leadflow.my@gmail.com","apiCallNumber":1,"labelIds":["INBOX"]}
+[GmailQueue:leadflow.my@gmail.com] queue paused until retry window {"pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task failed {"operation":"inbox.sync","priority":"low","message":"User-rate limit exceeded.  Retry after 2026-07-08T07:50:56.367Z","highPending":0,"lowPending":0}
+[EmailInbox] Found 39 email(s) since Wed, 01 Jul 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 2 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[GmailQueue:leadflow.my@gmail.com] task queued {"operation":"inbox.sync","priority":"low","highPending":0,"lowPending":1,"queuedTotal":2}
+[GmailQueue:leadflow.my@gmail.com] task started {"operation":"inbox.sync","priority":"low","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:40:56.403Z","highPending":0,"lowPending":0}
+[GmailAPI] call {"endpoint":"messages.list","accountKey":"leadflow.my@gmail.com","apiCallNumber":2,"labelIds":["INBOX"]}
+[GmailQueue:leadflow.my@gmail.com] queue paused until retry window {"pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task failed {"operation":"inbox.sync","priority":"low","message":"User-rate limit exceeded.  Retry after 2026-07-08T07:56:01.668Z","highPending":0,"lowPending":0}
+[EmailInbox] Found 39 email(s) since Wed, 01 Jul 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 6 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[GmailQueue:leadflow.my@gmail.com] task queued {"operation":"inbox.sync","priority":"low","highPending":0,"lowPending":1,"queuedTotal":3}
+[GmailQueue:leadflow.my@gmail.com] task started {"operation":"inbox.sync","priority":"low","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:46:01.696Z","highPending":0,"lowPending":0}
+[GmailAPI] call {"endpoint":"messages.list","accountKey":"leadflow.my@gmail.com","apiCallNumber":3,"labelIds":["INBOX"]}
+[GmailQueue:leadflow.my@gmail.com] queue paused until retry window {"pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task failed {"operation":"inbox.sync","priority":"low","message":"User-rate limit exceeded.  Retry after 2026-07-08T08:01:06.619Z","highPending":0,"lowPending":0}
+[EmailInbox] Found 39 email(s) since Wed, 01 Jul 2026 00:00:00 +0000 for workspace usr_super_admin_1783323507243
+[EmailInbox] Poll complete for usr_super_admin_1783323507243: 0 processed, 2 skipped
+[EmailInbox] Polling 1 workspace(s) with email integrations: [ 'usr_super_admin_1783323507243' ]
+[GmailQueue:leadflow.my@gmail.com] task queued {"operation":"inbox.sync","priority":"low","highPending":0,"lowPending":1,"queuedTotal":4}
+[GmailQueue:leadflow.my@gmail.com] task started {"operation":"inbox.sync","priority":"low","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}
+[GmailQueue:leadflow.my@gmail.com] task waiting for rate-limit pause {"operation":"inbox.sync","pausedUntil":"2026-07-08T07:51:06.712Z","highPending":0,"lowPending":0}

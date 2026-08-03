@@ -1,0 +1,12 @@
+{
+  "status": "qr",
+  "connected": false,
+  "hasQrDataUrl": true,
+  "qrMime": "data:image/png;base64",
+  "qrBytes": 5179,
+  "phone": null,
+  "lastError": null,
+  "backendErrors": [],
+  "savedPng": "logs\\whatsapp-qr-live.png",
+  "savedPngBytes": 5179
+}

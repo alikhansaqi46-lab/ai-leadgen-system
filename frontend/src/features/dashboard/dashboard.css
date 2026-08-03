@@ -1,0 +1,259 @@
+.lf-dashboard {
+  --dash-gap: 16px;
+  --dash-cyan: #22d3ee;
+  --dash-blue: #60a5fa;
+  --dash-green: #34d399;
+  --dash-purple: #a78bfa;
+  --dash-orange: #fb923c;
+}
+
+.lf-dash-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.lf-dash-section-head {
+  margin-bottom: 12px;
+}
+
+.lf-dash-section-head h2 {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.lf-dash-grid {
+  display: grid;
+  gap: var(--dash-gap);
+}
+
+.lf-dash-grid-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.lf-dash-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.lf-dash-card {
+  position: relative;
+  isolation: isolate;
+  min-height: 124px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 18px;
+  padding: 18px 16px;
+  color: inherit;
+  background:
+    linear-gradient(160deg, rgba(15, 23, 42, 0.78), rgba(8, 12, 20, 0.62));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  overflow: hidden;
+}
+
+.lf-dash-card:hover {
+  transform: translateY(-3px);
+}
+
+.lf-dash-card-glow {
+  position: absolute;
+  inset: -40% auto auto 50%;
+  width: 140px;
+  height: 140px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  opacity: 0.22;
+  filter: blur(28px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.lf-dash-card-value,
+.lf-dash-card-label,
+.lf-dash-status-top,
+.lf-dash-status-detail,
+.lf-dash-pill {
+  position: relative;
+  z-index: 1;
+}
+
+.lf-dash-card-value {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: #f8fafc;
+}
+
+.lf-dash-card-label {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.01em;
+}
+
+.lf-dash-status-card {
+  min-height: 132px;
+  justify-content: flex-start;
+  gap: 14px;
+}
+
+.lf-dash-status-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lf-dash-status-top .lf-dash-card-label {
+  margin-top: 0;
+  color: #e2e8f0;
+  font-size: 13px;
+}
+
+.lf-dash-status-detail {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
+.lf-dash-pill {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.lf-dash-pill.tone-ok {
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(52, 211, 153, 0.35);
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.18);
+}
+
+.lf-dash-pill.tone-warn {
+  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.lf-dash-pill.tone-off {
+  color: #94a3b8;
+  background: rgba(100, 116, 139, 0.12);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.lf-dash-card.accent-cyan {
+  border-color: rgba(34, 211, 238, 0.28);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28), 0 0 24px rgba(34, 211, 238, 0.12);
+}
+.lf-dash-card.accent-cyan .lf-dash-card-glow { background: var(--dash-cyan); }
+.lf-dash-card.accent-cyan:hover {
+  border-color: rgba(34, 211, 238, 0.55);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34), 0 0 28px rgba(34, 211, 238, 0.22);
+}
+
+.lf-dash-card.accent-blue {
+  border-color: rgba(96, 165, 250, 0.28);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28), 0 0 24px rgba(96, 165, 250, 0.12);
+}
+.lf-dash-card.accent-blue .lf-dash-card-glow { background: var(--dash-blue); }
+.lf-dash-card.accent-blue:hover {
+  border-color: rgba(96, 165, 250, 0.55);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34), 0 0 28px rgba(96, 165, 250, 0.22);
+}
+
+.lf-dash-card.accent-green {
+  border-color: rgba(52, 211, 153, 0.28);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28), 0 0 24px rgba(52, 211, 153, 0.12);
+}
+.lf-dash-card.accent-green .lf-dash-card-glow { background: var(--dash-green); }
+.lf-dash-card.accent-green:hover {
+  border-color: rgba(52, 211, 153, 0.55);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34), 0 0 28px rgba(52, 211, 153, 0.22);
+}
+
+.lf-dash-card.accent-purple {
+  border-color: rgba(167, 139, 250, 0.28);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28), 0 0 24px rgba(167, 139, 250, 0.12);
+}
+.lf-dash-card.accent-purple .lf-dash-card-glow { background: var(--dash-purple); }
+.lf-dash-card.accent-purple:hover {
+  border-color: rgba(167, 139, 250, 0.55);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34), 0 0 28px rgba(167, 139, 250, 0.22);
+}
+
+.lf-dash-card.accent-orange {
+  border-color: rgba(251, 146, 60, 0.28);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28), 0 0 24px rgba(251, 146, 60, 0.12);
+}
+.lf-dash-card.accent-orange .lf-dash-card-glow { background: var(--dash-orange); }
+.lf-dash-card.accent-orange:hover {
+  border-color: rgba(251, 146, 60, 0.55);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34), 0 0 28px rgba(251, 146, 60, 0.22);
+}
+
+.lf-dash-skeleton {
+  min-height: 124px;
+  pointer-events: none;
+  background: linear-gradient(110deg, rgba(30, 41, 59, 0.55) 20%, rgba(51, 65, 85, 0.45) 40%, rgba(30, 41, 59, 0.55) 60%);
+  background-size: 200% 100%;
+  animation: lf-dash-shimmer 1.2s linear infinite;
+}
+
+@keyframes lf-dash-shimmer {
+  to { background-position: -200% 0; }
+}
+
+.lf-dash-updated {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+@media (max-width: 1280px) {
+  .lf-dash-grid-6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .lf-dash-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .lf-dash-grid-6,
+  .lf-dash-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lf-dash-card {
+    min-height: 112px;
+    padding: 16px 14px;
+  }
+  .lf-dash-card-value {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lf-dash-grid-6,
+  .lf-dash-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}

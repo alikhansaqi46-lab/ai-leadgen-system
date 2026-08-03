@@ -1,0 +1,144 @@
+{
+  "mode": "get_only",
+  "at": "2026-07-29T05:44:16.246Z",
+  "list": {
+    "status": 200,
+    "total": 16,
+    "page": 1,
+    "pageSize": 10,
+    "totalPages": 2,
+    "eventsReturned": 10,
+    "libraryReturned": 10,
+    "top": [
+      {
+        "id": "ose_isolated_4c5898e4-b66a-45e5-abdd-49ea5e2587a8",
+        "ai_score": 7.7,
+        "score_label": "Average",
+        "industry": "Optometry",
+        "is_test": true,
+        "pinned": true
+      },
+      {
+        "id": "ose_99cb54e1-31dd-499b-98bd-39c03b1d47c8",
+        "ai_score": 6.4,
+        "score_label": "Weak",
+        "industry": "Dental",
+        "is_test": true,
+        "pinned": true
+      },
+      {
+        "id": "ose_20e3207c-c798-4abe-a7be-b425ed2cae5b",
+        "ai_score": 6.4,
+        "score_label": "Weak",
+        "industry": "Dental",
+        "is_test": true,
+        "pinned": false
+      },
+      {
+        "id": "ose_61afeeb4-45db-4a4c-ad78-62d39eb31d75",
+        "ai_score": 6.8,
+        "score_label": "Average",
+        "industry": "Dental",
+        "is_test": true,
+        "pinned": false
+      },
+      {
+        "id": "ose_d6a618e5-58a7-476f-9730-5bdcaebdd1db",
+        "ai_score": 4,
+        "score_label": "Weak",
+        "industry": "Dental",
+        "is_test": true,
+        "pinned": false
+      }
+    ]
+  },
+  "pagination": {
+    "page1": 10,
+    "page2Status": 200,
+    "page2": 6,
+    "total": 16,
+    "totalPages": 2
+  },
+  "hideTestQuery": {
+    "status": 200,
+    "total": 3
+  },
+  "filterIndustry": {
+    "status": 200,
+    "total": 1
+  },
+  "campaignDetail": {
+    "status": 200,
+    "name": "Isolated V2 Email Growth",
+    "aiScore": 7.7,
+    "scoreLabel": "Average",
+    "recKeys": [
+      "aiScore",
+      "actionHint",
+      "scoreLabel",
+      "weaknesses",
+      "bestCountry",
+      "bestAudience",
+      "bestIndustry",
+      "bestSendTime",
+      "whyItPerformed",
+      "reuseConfidence",
+      "recommendedChannel",
+      "expectedPerformance"
+    ],
+    "reuseConfidence": 92
+  },
+  "library": {
+    "status": 200,
+    "total": 17,
+    "count": 10,
+    "first": {
+      "id": "ocl_ose_isolated_4c5898e4-b66a-45e5-abdd-49ea5e2587a8",
+      "name": "Isolated V2 Email Growth",
+      "ai_score": 7.7
+    }
+  },
+  "workspaces": {
+    "status": 200,
+    "count": 1
+  },
+  "notifications": {
+    "status": 200,
+    "successDeepLinks": [
+      {
+        "title": "🔥 SUCCESS DETECTED — Best-performing AI prompts / messages",
+        "source": "ose_80023eff-931a-48d9-ba59-fd968631b22b",
+        "hasScore": true,
+        "hasOpenHint": true
+      },
+      {
+        "title": "🔥 SUCCESS DETECTED — Best-performing AI prompts / messages",
+        "source": "ose_453b3e07-7eea-43ee-bd19-ed5b13a48d50",
+        "hasScore": true,
+        "hasOpenHint": true
+      },
+      {
+        "title": "🔥 SUCCESS DETECTED — High-quality lead cohort",
+        "source": "ose_608a2bda-9786-4aa3-b865-6e5ba643078e",
+        "hasScore": true,
+        "hasOpenHint": true
+      },
+      {
+        "title": "🔥 SUCCESS DETECTED — High reply rate outreach",
+        "source": "ose_86ec8895-a86b-49c0-97f5-ccfd8d3505dc",
+        "hasScore": true,
+        "hasOpenHint": true
+      },
+      {
+        "title": "🔥 SUCCESS DETECTED — High-quality lead cohort",
+        "source": "ose_5c26350c-9354-489a-9e84-44912ba6abbe",
+        "hasScore": true,
+        "hasOpenHint": true
+      }
+    ]
+  },
+  "deleteGuardNoConfirm": {
+    "status": 400,
+    "error": "Delete requires confirm: true"
+  }
+}
