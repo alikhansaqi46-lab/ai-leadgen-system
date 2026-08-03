@@ -4,11 +4,15 @@
   "private": true,
   "dependencies": {
     "@supabase/supabase-js": "^2.108.1",
+    "@types/node": "^18.19.130",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "axios": "^1.6.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.4",
     "react-scripts": "5.0.1",
+    "typescript": "^4.9.5",
     "xlsx": "^0.18.5"
   },
   "scripts": {
@@ -34,11 +38,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:5001",
-  "devDependencies": {
-    "@types/node": "^18.19.130",
-    "@types/react": "^18.3.31",
-    "@types/react-dom": "^18.3.7",
-    "typescript": "^4.9.5"
-  }
+  "proxy": "http://localhost:5001"
 }
